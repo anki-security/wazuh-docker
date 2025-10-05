@@ -1,7 +1,7 @@
 # Wazuh Fluentd Docker Image
 # Multi-source syslog collector with OpenSearch integration
 # Version: 2.0 - Refactored modular architecture
-FROM fluent/fluentd:v1.17-debian-1
+FROM fluent/fluentd:v1.19-debian-1
 
 # Switch to root to install plugins
 USER root

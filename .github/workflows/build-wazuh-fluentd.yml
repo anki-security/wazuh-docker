@@ -15,7 +15,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: ${{ github.repository_owner }}/wazuh-fluentd
 
 jobs:
   build-and-push:
@@ -129,22 +129,33 @@ jobs:
           branch: ${{ github.ref }}
           tags: true
       - name: Create Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
           tag_name: wazuh-fluentd-v${{ steps.bump_version.outputs.new_version }}
-          release_name: Wazuh Fluentd v${{ steps.bump_version.outputs.new_version }}
+          name: Wazuh Fluentd v${{ steps.bump_version.outputs.new_version }}
           body: |
             ## Wazuh Fluentd v${{ steps.bump_version.outputs.new_version }}
             
             ### Docker Images
-            ```
+            ```bash
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.bump_version.outputs.new_version }}
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             ```
+            
+            ### Integrations (11 Total)
+            - NetFlow/IPFIX (2055/UDP)
+            - sFlow (6343/UDP)
+            - MikroTik RouterOS (30514/UDP)
+            - Fortinet FortiGate (30515/TCP, 30516/UDP)
+            - Cisco ASA (30517/UDP)
+            - Palo Alto PAN-OS (30518/TCP)
+            - Generic Syslog (30519/UDP, 30520/TCP)
+            - Generic CEF (30521/TCP, 30522/UDP)
+            - Ruckus Wireless (30523/UDP, 30524/TCP)
+            - Check Point (30525/TCP, 30526/UDP)
             
             ### Changes
             See [wazuh-fluentd/CHANGELOG.md](wazuh-fluentd/CHANGELOG.md) for details.
           draft: false
           prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
