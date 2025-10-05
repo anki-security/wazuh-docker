@@ -27,6 +27,9 @@ COPY config/roles_mapping.yml /
 
 COPY config/roles.yml /
 
+# Install repository-s3 plugin
+RUN /usr/share/wazuh-indexer/bin/opensearch-plugin install --batch repository-s3
+
 RUN bash config.sh
 
 ################################################################################

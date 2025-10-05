@@ -90,8 +90,6 @@ fi
 #  touch "/var/lib/wazuh-indexer/.flag"
 #fi
 
-"${INSTALLATION_DIR}/bin/opensearch-plugin" install --batch repository-s3
-
 # Allow to use S3 Compatible Storage as a snapshot repository
 #
 # Check if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables
