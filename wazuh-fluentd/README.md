@@ -178,9 +178,6 @@ Pipelines can be managed in two ways:
 
 ```
 wazuh-fluentd/
-├── .github/
-│   └── workflows/
-│       └── build-and-push.yml   # GitHub Actions workflow
 ├── Dockerfile
 ├── README.md
 ├── VERSION                      # Version file

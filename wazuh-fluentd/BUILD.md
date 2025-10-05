@@ -102,7 +102,7 @@ git push origin main --tags
 - ✅ `BUILD.md` - This file
 
 ### CI/CD
-- ✅ `.github/workflows/build-and-push.yml` - GitHub Actions workflow
+- ✅ `../.github/workflows/build-wazuh-fluentd.yml` - GitHub Actions workflow (in parent repo)
 
 ### Optional
 - ✅ `.dockerignore` - Docker build exclusions
