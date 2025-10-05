@@ -33,16 +33,18 @@ jobs:
       - name: Read current version
         id: current_version
         run: |
+          cd wazuh-fluentd
           CURRENT_VERSION=$(cat VERSION)
           echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "Current version: $CURRENT_VERSION"
-
+          
       - name: Bump version
         id: bump_version
         run: |
+          cd wazuh-fluentd
           CURRENT_VERSION="${{ steps.current_version.outputs.version }}"
           IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
-
+          
           case "${{ github.event.inputs.bump_type }}" in
             major)
               major=$((major + 1))
@@ -57,27 +59,27 @@ jobs:
               patch=$((patch + 1))
               ;;
           esac
-
+          
           NEW_VERSION="${major}.${minor}.${patch}"
           echo "$NEW_VERSION" > VERSION
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "Bumped version: $CURRENT_VERSION -> $NEW_VERSION"
-
+          
       - name: Update CHANGELOG
         run: |
+          cd wazuh-fluentd
           NEW_VERSION="${{ steps.bump_version.outputs.new_version }}"
           DATE=$(date +%Y-%m-%d)
-
+          
           # Create new changelog entry
           cat > CHANGELOG.tmp << 'EOF'
           # Changelog
-
+          
           EOF
           echo "## [$NEW_VERSION] - $DATE" >> CHANGELOG.tmp
           echo "" >> CHANGELOG.tmp
           echo "### Changed" >> CHANGELOG.tmp
           echo "- Version bump to $NEW_VERSION" >> CHANGELOG.tmp
-          echo "- Built and pushed via GitHub Actions" >> CHANGELOG.tmp
           echo "" >> CHANGELOG.tmp
           tail -n +2 CHANGELOG.md >> CHANGELOG.tmp
           mv CHANGELOG.tmp CHANGELOG.md
@@ -104,7 +106,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./wazuh-fluentd
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -116,9 +118,9 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add VERSION CHANGELOG.md
-          git commit -m "chore: bump version to ${{ steps.bump_version.outputs.new_version }}"
-          git tag -a "v${{ steps.bump_version.outputs.new_version }}" -m "Release v${{ steps.bump_version.outputs.new_version }}"
+          git add wazuh-fluentd/VERSION wazuh-fluentd/CHANGELOG.md
+          git commit -m "chore(wazuh-fluentd): bump version to ${{ steps.bump_version.outputs.new_version }}"
+          git tag -a "wazuh-fluentd-v${{ steps.bump_version.outputs.new_version }}" -m "Release wazuh-fluentd v${{ steps.bump_version.outputs.new_version }}"
 
       - name: Push changes
         uses: ad-m/github-push-action@master
@@ -126,24 +128,23 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
           tags: true
-
       - name: Create Release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ steps.bump_version.outputs.new_version }}
-          release_name: Release v${{ steps.bump_version.outputs.new_version }}
+          tag_name: wazuh-fluentd-v${{ steps.bump_version.outputs.new_version }}
+          release_name: Wazuh Fluentd v${{ steps.bump_version.outputs.new_version }}
           body: |
             ## Wazuh Fluentd v${{ steps.bump_version.outputs.new_version }}
-
+            
             ### Docker Images
             ```
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.bump_version.outputs.new_version }}
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             ```
-
+            
             ### Changes
-            See [CHANGELOG.md](CHANGELOG.md) for details.
+            See [wazuh-fluentd/CHANGELOG.md](wazuh-fluentd/CHANGELOG.md) for details.
           draft: false
           prerelease: false
