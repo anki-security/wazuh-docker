@@ -76,6 +76,35 @@ services:
       - wazuh.indexer:wazuh.indexer
       - wazuh.manager:wazuh.manager
 
+  wazuh.fluentd:
+    build:
+      context: wazuh-fluentd/
+    image: wazuh/wazuh-fluentd:${WAZUH_IMAGE_VERSION}
+    hostname: wazuh.fluentd
+    restart: always
+    ports:
+      - "30514:30514/udp"  # MikroTik
+      - "30515:30515/tcp"  # Fortigate CEF
+      - "30516:30516/udp"  # Fortigate Syslog
+      - "30517:30517/udp"  # Cisco ASA
+      - "30518:30518/tcp"  # Palo Alto
+      - "30519:30519/udp"  # Generic Syslog
+    environment:
+      - INDEXER_HOST=wazuh.indexer
+      - INDEXER_PORT=9200
+      - INDEXER_USERNAME=admin
+      - INDEXER_PASSWORD=admin
+      - SETUP_PIPELINES=true
+      - FLUENTD_LOG_LEVEL=info
+      - FLUENTD_WORKERS=1
+    volumes:
+      - fluentd_buffer:/fluentd/buffer
+      - fluentd_logs:/fluentd/log
+    depends_on:
+      - wazuh.indexer
+    links:
+      - wazuh.indexer:wazuh.indexer
+
 volumes:
   wazuh_api_configuration:
   wazuh_etc:
@@ -86,3 +115,5 @@ volumes:
   wazuh_wodles:
   filebeat_etc:
   filebeat_var:
+  fluentd_buffer:
+  fluentd_logs:
