@@ -17,7 +17,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     netcat-openbsd \
     dnsutils \
     iputils-ping \
-    tcpdump
+    tcpdump \
+    net-tools
 
 # Install required plugins with cache mount
 RUN --mount=type=cache,target=/root/.gem \
