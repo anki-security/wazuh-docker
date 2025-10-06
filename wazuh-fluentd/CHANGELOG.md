@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.0] - 2025-10-06
+
+### Changed
+- Version bump to 2.3.0
+
+
 ## [2.2.0] - 2025-10-06
 
 ### Changed
