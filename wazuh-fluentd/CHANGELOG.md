@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.8.0] - 2025-10-06
+
+### Changed
+- Version bump to 2.8.0
+
+
 ## [2.7.0] - 2025-10-06
 
 ### Changed
