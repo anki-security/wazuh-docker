@@ -113,6 +113,9 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
+          # Speed optimizations
+          provenance: false
+          sbom: false
 
       - name: Commit version bump
         run: |

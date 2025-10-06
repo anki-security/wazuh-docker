@@ -7,18 +7,20 @@ FROM fluent/fluentd:v1.19-debian-1
 USER root
 
 # Install system dependencies for plugins and debugging tools
-RUN apt-get update && \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
     ruby-dev \
     curl \
     netcat-openbsd \
     dnsutils \
-    iputils-ping \
-    && rm -rf /var/lib/apt/lists/*
+    iputils-ping
 
-# Install required plugins
-RUN gem install fluent-plugin-opensearch -v 1.1.4 --no-document && \
+# Install required plugins with cache mount
+RUN --mount=type=cache,target=/root/.gem \
+    gem install fluent-plugin-opensearch -v 1.1.4 --no-document && \
     gem install fluent-plugin-rewrite-tag-filter --no-document && \
     gem install fluent-plugin-record-modifier --no-document && \
     gem install fluent-plugin-grok-parser --no-document && \
