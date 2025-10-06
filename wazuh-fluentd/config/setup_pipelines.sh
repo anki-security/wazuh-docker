@@ -101,7 +101,7 @@ SUCCESS=0
 FAILED=0
 
 # Create all available pipelines
-if create_pipeline "mikrotik-routeros" "${PIPELINE_DIR}/mikrotik-pipeline.json"; then
+if create_pipeline "mikrotik" "${PIPELINE_DIR}/mikrotik-pipeline.json"; then
     SUCCESS=$((SUCCESS + 1))
 else
     FAILED=$((FAILED + 1))

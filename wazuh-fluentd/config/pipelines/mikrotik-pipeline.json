@@ -206,7 +206,7 @@
     },
     {
       "pipeline": {
-        "name": "logs-routeros.syslog@custom",
+        "name": "logs-mikrotik.syslog@custom",
         "ignore_failure": true
       }
     }
