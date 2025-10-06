@@ -18,7 +18,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     dnsutils \
     iputils-ping \
     tcpdump \
-    net-tools
+    net-tools \
+    iproute2 \
+    lsof
 
 # Install required plugins with cache mount
 RUN --mount=type=cache,target=/root/.gem \

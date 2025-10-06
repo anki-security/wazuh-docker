@@ -83,12 +83,21 @@ services:
     hostname: wazuh.fluentd
     restart: always
     ports:
-      - "30514:30514/udp"  # MikroTik
-      - "30515:30515/tcp"  # Fortigate CEF
-      - "30516:30516/udp"  # Fortigate Syslog
-      - "30517:30517/udp"  # Cisco ASA
-      - "30518:30518/tcp"  # Palo Alto
-      - "30519:30519/udp"  # Generic Syslog
+      - "2055:2055/udp"    # NetFlow/IPFIX
+      - "6343:6343/udp"    # sFlow
+      - "40514:30514/udp"  # MikroTik
+      - "40515:30515/tcp"  # Fortigate CEF
+      - "40516:30516/udp"  # Fortigate Syslog
+      - "40517:30517/udp"  # Cisco ASA
+      - "40518:30518/tcp"  # Palo Alto
+      - "40519:30519/udp"  # Generic Syslog UDP
+      - "40520:30520/tcp"  # Generic Syslog TCP
+      - "40521:30521/tcp"  # Generic CEF TCP
+      - "40522:30522/udp"  # Generic CEF UDP
+      - "40523:30523/udp"  # Ruckus UDP
+      - "40524:30524/tcp"  # Ruckus TCP
+      - "40525:30525/tcp"  # Checkpoint CEF
+      - "40526:30526/udp"  # Checkpoint Syslog
     environment:
       - INDEXER_HOST=wazuh.indexer
       - INDEXER_PORT=9200
@@ -96,7 +105,6 @@ services:
       - INDEXER_PASSWORD=admin
       - SETUP_PIPELINES=true
       - FLUENTD_LOG_LEVEL=info
-      - FLUENTD_WORKERS=1
     volumes:
       - fluentd_buffer:/fluentd/buffer
       - fluentd_logs:/fluentd/log
