@@ -23,22 +23,51 @@ This version features a completely refactored modular architecture with:
 
 ## Supported Integrations
 
-| Integration | Port(s) | Protocol | Status |
-|-------------|---------|----------|--------|
-| **NetFlow/IPFIX** | 2055 | UDP | ✅ Active |
-| **sFlow** | 6343 | UDP | ✅ Active |
-| **MikroTik RouterOS** | 30514 | UDP | ✅ Active |
-| **Fortinet FortiGate** | 30515, 30516 | TCP, UDP | ✅ Active |
-| **Cisco ASA** | 30517 | UDP | ✅ Active |
-| **Palo Alto PAN-OS** | 30518 | TCP | ✅ Active |
-| **Generic Syslog** | 30519, 30520 | UDP, TCP | ✅ Active |
-| **Generic CEF** | 30521, 30522 | TCP, UDP | ✅ Active |
-| **Ruckus Wireless** | 30523, 30524 | UDP, TCP | ✅ Active |
-| **Check Point** | 30525, 30526 | TCP, UDP | ✅ Active |
+| Integration | Port(s) | Protocol | Index Pattern | Status |
+|-------------|---------|----------|---------------|--------|
+| **NetFlow/IPFIX** | 2055 | UDP | `anki-netflow-*` | ✅ Active |
+| **sFlow** | 6343 | UDP | `anki-sflow-*` | ✅ Active |
+| **MikroTik RouterOS** | 30514 | UDP | `anki-mikrotik-*` | ✅ Active |
+| **Fortinet FortiGate** | 30515, 30516 | TCP, UDP | `anki-fortigate-*` | ✅ Active |
+| **Cisco ASA** | 30517 | UDP | `anki-cisco-asa-*` | ✅ Active |
+| **Palo Alto PAN-OS** | 30518 | TCP | `anki-paloalto-*` | ✅ Active |
+| **Generic Syslog** | 30519, 30520 | UDP, TCP | `anki-generic-syslog-*` | ✅ Active |
+| **Generic CEF** | 30521, 30522 | TCP, UDP | `anki-generic-cef-*` | ✅ Active |
+| **Ruckus Wireless** | 30523, 30524 | UDP, TCP | `anki-ruckus-*` | ✅ Active |
+| **Check Point** | 30525, 30526 | TCP, UDP | `anki-checkpoint-*` | ✅ Active |
 
 > **Note**: MikroTik integration is optional (disabled by default). See [INTEGRATIONS.md](INTEGRATIONS.md) for detailed configuration guides.
 
 For detailed integration documentation, see **[INTEGRATIONS.md](INTEGRATIONS.md)**.
+
+## Index Naming Convention
+
+All indices use the `anki-` prefix for easy management:
+
+```
+anki-mikrotik-2025.01.15
+anki-fortigate-cef-2025.01.15
+anki-netflow-2025.01.15
+...
+```
+
+### Benefits:
+- **Easy identification**: All Anki Security indices grouped together
+- **Simple retention policies**: Apply policies to `anki-*` pattern
+- **Access control**: Grant permissions to `anki-*` indices
+- **Index lifecycle management**: Manage all indices with single policy
+
+### Query Examples:
+```bash
+# View all Anki indices
+GET _cat/indices/anki-*?v
+
+# Search across all sources
+GET anki-*/_search
+
+# Search specific source
+GET anki-mikrotik-*/_search
+```
 
 ## Environment Variables
 
