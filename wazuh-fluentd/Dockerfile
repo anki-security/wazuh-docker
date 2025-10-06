@@ -61,20 +61,20 @@ RUN chown -R fluent:fluent /fluentd/etc /fluentd/pipelines
 # Expose ports for different syslog sources
 # 2055 - NetFlow/IPFIX (UDP)
 # 6343 - sFlow (UDP)
-# 30514 - MikroTik (UDP)
-# 30515 - Fortigate CEF (TCP)
-# 30516 - Fortigate Syslog (UDP)
-# 30517 - Cisco ASA (UDP)
-# 30518 - Palo Alto (TCP)
-# 30519 - Generic Syslog (UDP)
-# 30520 - Generic Syslog (TCP)
-# 30521 - Generic CEF (TCP)
-# 30522 - Generic CEF (UDP)
-# 30523 - Ruckus Wireless (UDP)
-# 30524 - Ruckus Wireless (TCP)
-# 30525 - Check Point CEF (TCP)
-# 30526 - Check Point Syslog (UDP)
-EXPOSE 2055/udp 6343/udp 30514/udp 30515/tcp 30516/udp 30517/udp 30518/tcp 30519/udp 30520/tcp 30521/tcp 30522/udp 30523/udp 30524/tcp 30525/tcp 30526/udp
+# 40514 - MikroTik (UDP)
+# 40515 - Fortigate CEF (TCP)
+# 40516 - Fortigate Syslog (UDP)
+# 40517 - Cisco ASA (UDP)
+# 40518 - Palo Alto (TCP)
+# 40519 - Generic Syslog (UDP)
+# 40520 - Generic Syslog (TCP)
+# 40521 - Generic CEF (TCP)
+# 40522 - Generic CEF (UDP)
+# 40523 - Ruckus Wireless (UDP)
+# 40524 - Ruckus Wireless (TCP)
+# 40525 - Check Point CEF (TCP)
+# 40526 - Check Point Syslog (UDP)
+EXPOSE 2055/udp 6343/udp 40514/udp 40515/tcp 40516/udp 40517/udp 40518/tcp 40519/udp 40520/tcp 40521/tcp 40522/udp 40523/udp 40524/tcp 40525/tcp 40526/udp
 
 # Switch back to fluent user
 USER fluent
