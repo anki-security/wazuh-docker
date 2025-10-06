@@ -6,11 +6,15 @@ FROM fluent/fluentd:v1.19-debian-1
 # Switch to root to install plugins
 USER root
 
-# Install system dependencies for plugins
+# Install system dependencies for plugins and debugging tools
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
     ruby-dev \
+    curl \
+    netcat-openbsd \
+    dnsutils \
+    iputils-ping \
     && rm -rf /var/lib/apt/lists/*
 
 # Install required plugins
