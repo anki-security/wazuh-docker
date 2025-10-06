@@ -1,0 +1,226 @@
+{
+  "description": "Check Point Firewall processing pipeline",
+  "processors": [
+    {
+      "grok": {
+        "field": "message",
+        "patterns": [
+          "%{SYSLOG5424PRI:syslog_pri}?(?:%{SYSLOGTIMESTAMP:syslog_timestamp}|%{TIMESTAMP_ISO8601:syslog_timestamp})? ?(?:%{SYSLOGHOST:syslog_host})? ?CEF:%{DATA:cef_version}\\|%{DATA:device_vendor}\\|%{DATA:device_product}\\|%{DATA:device_version}\\|%{DATA:signature_id}\\|%{DATA:cef_name}\\|%{DATA:cef_severity}\\|%{GREEDYDATA:cef_extension}",
+          "%{SYSLOG5424PRI:syslog_pri}%{GREEDYDATA:checkpoint_message}"
+        ],
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "kv": {
+        "field": "cef_extension",
+        "field_split": " ",
+        "value_split": "=",
+        "target_field": "checkpoint",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "kv": {
+        "field": "checkpoint_message",
+        "field_split": ";",
+        "value_split": "=",
+        "target_field": "checkpoint",
+        "trim_key": "\"",
+        "trim_value": "\"",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "checkpoint.src",
+        "target_field": "source.ip",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "checkpoint.dst",
+        "target_field": "destination.ip",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "checkpoint.spt",
+        "target_field": "source.port",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "checkpoint.dpt",
+        "target_field": "destination.port",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "checkpoint.service",
+        "target_field": "network.application",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "checkpoint.s_port",
+        "target_field": "source.port",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "checkpoint.proto",
+        "target_field": "network.transport",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "checkpoint.action",
+        "target_field": "event.action",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "checkpoint.rule",
+        "target_field": "rule.name",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "checkpoint.rule_uid",
+        "target_field": "rule.id",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "checkpoint.src_user_name",
+        "target_field": "source.user.name",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "checkpoint.dst_user_name",
+        "target_field": "destination.user.name",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "checkpoint.origin",
+        "target_field": "observer.name",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "checkpoint.sourceTranslatedAddress",
+        "target_field": "source.nat.ip",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "checkpoint.destinationTranslatedAddress",
+        "target_field": "destination.nat.ip",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "script": {
+        "lang": "painless",
+        "source": "if (ctx.event?.action != null) { String action = ctx.event.action.toLowerCase(); if (action == 'accept' || action == 'allow') { ctx.event.outcome = 'success'; ctx.event.type = ['allowed', 'connection']; } else if (action == 'drop' || action == 'reject' || action == 'block') { ctx.event.outcome = 'failure'; ctx.event.type = ['denied', 'connection']; } else if (action == 'encrypt' || action == 'decrypt') { ctx.event.category = ['network']; if (ctx.tags == null) { ctx.tags = []; } ctx.tags.add('vpn'); } }",
+        "ignore_failure": true
+      }
+    },
+    {
+      "convert": {
+        "field": "source.port",
+        "type": "long",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "convert": {
+        "field": "destination.port",
+        "type": "long",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "set": {
+        "field": "event.kind",
+        "value": "event",
+        "override": false
+      }
+    },
+    {
+      "set": {
+        "field": "event.category",
+        "value": ["network"],
+        "override": false
+      }
+    },
+    {
+      "set": {
+        "field": "observer.type",
+        "value": "firewall"
+      }
+    },
+    {
+      "set": {
+        "field": "observer.vendor",
+        "value": "checkpoint"
+      }
+    },
+    {
+      "date": {
+        "field": "syslog_timestamp",
+        "target_field": "@timestamp",
+        "formats": [
+          "MMM dd HH:mm:ss",
+          "MMM  d HH:mm:ss",
+          "ISO8601"
+        ],
+        "ignore_failure": true
+      }
+    },
+    {
+      "remove": {
+        "field": ["checkpoint_message", "cef_extension", "syslog_timestamp", "syslog_pri"],
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    }
+  ]
+}
