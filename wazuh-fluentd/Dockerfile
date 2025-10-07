@@ -33,7 +33,7 @@ RUN --mount=type=cache,target=/root/.gem \
     gem install fluent-plugin-detect-exceptions --no-document && \
     gem install fluent-plugin-prometheus --no-document && \
     gem install fluent-plugin-elasticsearch --no-document && \
-    gem install fluent-plugin-netflowipfix --no-document && \
+    gem install fluent-plugin-netflow --no-document && \
     gem sources --clear-all
 
 # Create necessary directories
