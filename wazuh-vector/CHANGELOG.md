@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.10.13] - 2025-10-07
+
+### Changed
+- Version bump to 2.10.13
+
+
 ## [2.10.12] - 2025-10-07
 
 ### Changed
