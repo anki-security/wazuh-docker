@@ -48,7 +48,7 @@ source = '''
   .log_source = "netflow"
   .vendor = "unknown"
   .product = "netflow"
-  .@timestamp = now()
+  .timestamp = now()
 '''
 
 # Enrich MikroTik data
@@ -60,7 +60,7 @@ source = '''
   .vendor = "mikrotik"
   .product = "routeros"
   .hostname = .host ?? "unknown"
-  .@timestamp = now()
+  .timestamp = now()
 '''
 
 # Enrich Generic Syslog UDP
@@ -72,7 +72,7 @@ source = '''
   .vendor = "unknown"
   .product = "syslog"
   .hostname = .host ?? "unknown"
-  .@timestamp = now()
+  .timestamp = now()
 '''
 
 # Enrich Generic Syslog TCP
@@ -84,7 +84,7 @@ source = '''
   .vendor = "unknown"
   .product = "syslog"
   .hostname = .host ?? "unknown"
-  .@timestamp = now()
+  .timestamp = now()
 '''
 
 # ============================================================================
@@ -95,7 +95,7 @@ source = '''
 [sinks.netflow_opensearch]
 type = "elasticsearch"
 inputs = ["netflow_enrich"]
-endpoint = "${INDEXER_HOST:?}:${INDEXER_PORT:?}"
+endpoint = "https://${INDEXER_HOST:?}:${INDEXER_PORT:?}"
 mode = "bulk"
 api_version = "v8"
 index = "anki-netflow-%Y.%m.%d"
@@ -128,7 +128,7 @@ when_full = "drop_newest"
 [sinks.mikrotik_opensearch]
 type = "elasticsearch"
 inputs = ["mikrotik_enrich"]
-endpoint = "${INDEXER_HOST:?}:${INDEXER_PORT:?}"
+endpoint = "https://${INDEXER_HOST:?}:${INDEXER_PORT:?}"
 mode = "bulk"
 api_version = "v8"
 index = "anki-mikrotik-%Y.%m.%d"
@@ -159,7 +159,7 @@ when_full = "drop_newest"
 [sinks.generic_opensearch]
 type = "elasticsearch"
 inputs = ["generic_udp_enrich", "generic_tcp_enrich"]
-endpoint = "${INDEXER_HOST:?}:${INDEXER_PORT:?}"
+endpoint = "https://${INDEXER_HOST:?}:${INDEXER_PORT:?}"
 mode = "bulk"
 api_version = "v8"
 index = "anki-generic-syslog-%Y.%m.%d"
@@ -190,13 +190,10 @@ when_full = "drop_newest"
 # OBSERVABILITY - Metrics and Logs
 # ============================================================================
 
-# Vector internal logs
-[sinks.vector_logs]
-type = "console"
-inputs = ["netflow", "mikrotik", "generic_syslog_udp", "generic_syslog_tcp"]
-[sinks.vector_logs.encoding]
-codec = "json"
-
-# Only log errors and warnings
-[sinks.vector_logs.healthcheck]
-enabled = false
+# Vector internal logs (disabled - data goes to OpenSearch)
+# Uncomment to debug and see events in stdout
+# [sinks.vector_logs]
+# type = "console"
+# inputs = ["netflow_enrich", "mikrotik_enrich", "generic_udp_enrich", "generic_tcp_enrich"]
+# [sinks.vector_logs.encoding]
+# codec = "json"
