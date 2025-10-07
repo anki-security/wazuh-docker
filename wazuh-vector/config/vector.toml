@@ -1,0 +1,198 @@
+# Wazuh Vector Configuration
+# Multi-source syslog and NetFlow collector
+# Version: 3.0
+
+[api]
+enabled = false
+
+data_dir = "/vector/data"
+
+# ============================================================================
+# SOURCES - Data Inputs
+# ============================================================================
+
+# NetFlow v5/v9 Source
+[sources.netflow]
+type = "netflow"
+address = "0.0.0.0:2055"
+# NetFlow will automatically parse v5 and v9 formats
+
+# MikroTik RouterOS Syslog (UDP)
+[sources.mikrotik]
+type = "syslog"
+address = "0.0.0.0:40514"
+mode = "udp"
+
+# Generic Syslog (UDP)
+[sources.generic_syslog_udp]
+type = "syslog"
+address = "0.0.0.0:40519"
+mode = "udp"
+
+# Generic Syslog (TCP)
+[sources.generic_syslog_tcp]
+type = "syslog"
+address = "0.0.0.0:40520"
+mode = "tcp"
+
+# ============================================================================
+# TRANSFORMS - Data Processing
+# ============================================================================
+
+# Enrich NetFlow data
+[transforms.netflow_enrich]
+type = "remap"
+inputs = ["netflow"]
+source = '''
+  .log_source = "netflow"
+  .vendor = "unknown"
+  .product = "netflow"
+  .@timestamp = now()
+'''
+
+# Enrich MikroTik data
+[transforms.mikrotik_enrich]
+type = "remap"
+inputs = ["mikrotik"]
+source = '''
+  .log_source = "mikrotik"
+  .vendor = "mikrotik"
+  .product = "routeros"
+  .hostname = .host ?? "unknown"
+  .@timestamp = now()
+'''
+
+# Enrich Generic Syslog UDP
+[transforms.generic_udp_enrich]
+type = "remap"
+inputs = ["generic_syslog_udp"]
+source = '''
+  .log_source = "generic"
+  .vendor = "unknown"
+  .product = "syslog"
+  .hostname = .host ?? "unknown"
+  .@timestamp = now()
+'''
+
+# Enrich Generic Syslog TCP
+[transforms.generic_tcp_enrich]
+type = "remap"
+inputs = ["generic_syslog_tcp"]
+source = '''
+  .log_source = "generic"
+  .vendor = "unknown"
+  .product = "syslog"
+  .hostname = .host ?? "unknown"
+  .@timestamp = now()
+'''
+
+# ============================================================================
+# SINKS - Data Outputs
+# ============================================================================
+
+# NetFlow to OpenSearch
+[sinks.netflow_opensearch]
+type = "elasticsearch"
+inputs = ["netflow_enrich"]
+endpoint = "${INDEXER_HOST:?}:${INDEXER_PORT:?}"
+mode = "bulk"
+api_version = "v8"
+index = "anki-netflow-%Y.%m.%d"
+
+# TLS settings
+[sinks.netflow_opensearch.tls]
+enabled = true
+verify_certificate = false
+verify_hostname = false
+
+# Authentication
+[sinks.netflow_opensearch.auth]
+strategy = "basic"
+user = "${INDEXER_USERNAME:?}"
+password = "${INDEXER_PASSWORD:?}"
+
+pipeline = "netflow"
+
+[sinks.netflow_opensearch.batch]
+max_events = 1000
+timeout_secs = 10
+
+[sinks.netflow_opensearch.buffer]
+type = "disk"
+max_size = 536870912
+when_full = "drop_newest"
+
+# MikroTik to OpenSearch
+[sinks.mikrotik_opensearch]
+type = "elasticsearch"
+inputs = ["mikrotik_enrich"]
+endpoint = "${INDEXER_HOST:?}:${INDEXER_PORT:?}"
+mode = "bulk"
+api_version = "v8"
+index = "anki-mikrotik-%Y.%m.%d"
+
+[sinks.mikrotik_opensearch.tls]
+enabled = true
+verify_certificate = false
+verify_hostname = false
+
+[sinks.mikrotik_opensearch.auth]
+strategy = "basic"
+user = "${INDEXER_USERNAME:?}"
+password = "${INDEXER_PASSWORD:?}"
+
+pipeline = "mikrotik"
+
+[sinks.mikrotik_opensearch.batch]
+max_events = 1000
+timeout_secs = 10
+
+[sinks.mikrotik_opensearch.buffer]
+type = "disk"
+max_size = 536870912
+when_full = "drop_newest"
+
+# Generic Syslog to OpenSearch
+[sinks.generic_opensearch]
+type = "elasticsearch"
+inputs = ["generic_udp_enrich", "generic_tcp_enrich"]
+endpoint = "${INDEXER_HOST:?}:${INDEXER_PORT:?}"
+mode = "bulk"
+api_version = "v8"
+index = "anki-generic-syslog-%Y.%m.%d"
+
+[sinks.generic_opensearch.tls]
+enabled = true
+verify_certificate = false
+verify_hostname = false
+
+[sinks.generic_opensearch.auth]
+strategy = "basic"
+user = "${INDEXER_USERNAME:?}"
+password = "${INDEXER_PASSWORD:?}"
+
+pipeline = "generic-syslog"
+
+[sinks.generic_opensearch.batch]
+max_events = 1000
+timeout_secs = 10
+
+[sinks.generic_opensearch.buffer]
+type = "disk"
+max_size = 536870912
+when_full = "drop_newest"
+
+# ============================================================================
+# OBSERVABILITY - Metrics and Logs
+# ============================================================================
+
+# Vector internal logs
+[sinks.vector_logs]
+type = "console"
+inputs = ["netflow", "mikrotik", "generic_syslog_udp", "generic_syslog_tcp"]
+[sinks.vector_logs.encoding]
+codec = "json"
+
+# Only log errors and warnings
+[sinks.vector_logs.healthcheck]
+enabled = false
