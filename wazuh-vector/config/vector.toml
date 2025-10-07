@@ -98,6 +98,8 @@ inputs = ["netflow_enrich"]
 endpoint = "https://${INDEXER_HOST:?}:${INDEXER_PORT:?}"
 mode = "bulk"
 api_version = "v8"
+
+[sinks.netflow_opensearch.bulk]
 index = "anki-netflow-%Y.%m.%d"
 
 # TLS settings
@@ -131,6 +133,8 @@ inputs = ["mikrotik_enrich"]
 endpoint = "https://${INDEXER_HOST:?}:${INDEXER_PORT:?}"
 mode = "bulk"
 api_version = "v8"
+
+[sinks.mikrotik_opensearch.bulk]
 index = "anki-mikrotik-%Y.%m.%d"
 
 [sinks.mikrotik_opensearch.tls]
@@ -162,6 +166,8 @@ inputs = ["generic_udp_enrich", "generic_tcp_enrich"]
 endpoint = "https://${INDEXER_HOST:?}:${INDEXER_PORT:?}"
 mode = "bulk"
 api_version = "v8"
+
+[sinks.generic_opensearch.bulk]
 index = "anki-generic-syslog-%Y.%m.%d"
 
 [sinks.generic_opensearch.tls]
