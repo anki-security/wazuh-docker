@@ -22,17 +22,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     iproute2 \
     lsof
 
-# Install required plugins with cache mount
+# Install only required plugins (minimal set)
 RUN --mount=type=cache,target=/root/.gem \
     gem install fluent-plugin-opensearch -v 1.1.4 --no-document && \
-    gem install fluent-plugin-rewrite-tag-filter --no-document && \
-    gem install fluent-plugin-record-modifier --no-document && \
-    gem install fluent-plugin-grok-parser --no-document && \
-    gem install fluent-plugin-parser-cri --no-document && \
-    gem install fluent-plugin-multi-format-parser --no-document && \
-    gem install fluent-plugin-detect-exceptions --no-document && \
-    gem install fluent-plugin-prometheus --no-document && \
-    gem install fluent-plugin-elasticsearch --no-document && \
     gem install fluent-plugin-netflow --no-document && \
     gem sources --clear-all
 
