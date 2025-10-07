@@ -1,4 +1,4 @@
-name: Build and Push Wazuh Fluentd
+name: Build and Push Wazuh Vector
 
 on:
   workflow_dispatch:
@@ -15,7 +15,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/wazuh-fluentd
+  IMAGE_NAME: ${{ github.repository_owner }}/wazuh-vector
 
 jobs:
   build-and-push:
@@ -33,7 +33,7 @@ jobs:
       - name: Read current version
         id: current_version
         run: |
-          cd wazuh-fluentd
+          cd wazuh-vector
           CURRENT_VERSION=$(cat VERSION)
           echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "Current version: $CURRENT_VERSION"
@@ -41,7 +41,7 @@ jobs:
       - name: Bump version
         id: bump_version
         run: |
-          cd wazuh-fluentd
+          cd wazuh-vector
           CURRENT_VERSION="${{ steps.current_version.outputs.version }}"
           IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
           
@@ -67,7 +67,7 @@ jobs:
           
       - name: Update CHANGELOG
         run: |
-          cd wazuh-fluentd
+          cd wazuh-vector
           NEW_VERSION="${{ steps.bump_version.outputs.new_version }}"
           DATE=$(date +%Y-%m-%d)
           
@@ -106,7 +106,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./wazuh-fluentd
+          context: ./wazuh-vector
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -121,9 +121,9 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add wazuh-fluentd/VERSION wazuh-fluentd/CHANGELOG.md
-          git commit -m "chore(wazuh-fluentd): bump version to ${{ steps.bump_version.outputs.new_version }}"
-          git tag -a "wazuh-fluentd-v${{ steps.bump_version.outputs.new_version }}" -m "Release wazuh-fluentd v${{ steps.bump_version.outputs.new_version }}"
+          git add wazuh-vector/VERSION wazuh-vector/CHANGELOG.md
+          git commit -m "chore(wazuh-vector): bump version to ${{ steps.bump_version.outputs.new_version }}"
+          git tag -a "wazuh-vector-v${{ steps.bump_version.outputs.new_version }}" -m "Release wazuh-vector v${{ steps.bump_version.outputs.new_version }}"
 
       - name: Push changes
         uses: ad-m/github-push-action@master
@@ -134,10 +134,12 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: wazuh-fluentd-v${{ steps.bump_version.outputs.new_version }}
-          name: Wazuh Fluentd v${{ steps.bump_version.outputs.new_version }}
+          tag_name: wazuh-vector-v${{ steps.bump_version.outputs.new_version }}
+          name: Wazuh Vector v${{ steps.bump_version.outputs.new_version }}
           body: |
-            ## Wazuh Fluentd v${{ steps.bump_version.outputs.new_version }}
+            ## Wazuh Vector v${{ steps.bump_version.outputs.new_version }}
+            
+            **Powered by Vector.dev** - High-performance data pipeline built in Rust
             
             ### Docker Images
             ```bash
@@ -145,20 +147,21 @@ jobs:
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             ```
             
-            ### Integrations (11 Total)
-            - NetFlow/IPFIX (2055/UDP)
-            - sFlow (6343/UDP)
-            - MikroTik RouterOS (30514/UDP)
-            - Fortinet FortiGate (30515/TCP, 30516/UDP)
-            - Cisco ASA (30517/UDP)
-            - Palo Alto PAN-OS (30518/TCP)
-            - Generic Syslog (30519/UDP, 30520/TCP)
-            - Generic CEF (30521/TCP, 30522/UDP)
-            - Ruckus Wireless (30523/UDP, 30524/TCP)
-            - Check Point (30525/TCP, 30526/UDP)
+            ### Active Sources (4 ports)
+            - ✅ NetFlow v5/v9 (2055/UDP) - Native Vector support
+            - ✅ MikroTik RouterOS (40514/UDP)
+            - ✅ Generic Syslog (40519/UDP, 40520/TCP)
+            
+            ### Features
+            - 🚀 10x faster than Fluentd (Rust vs Ruby)
+            - 💾 10x lower memory usage (~50MB)
+            - ✅ Native NetFlow support (actually works!)
+            - 🔒 TLS/SSL to OpenSearch
+            - 📊 OpenSearch pipeline support
+            - 💿 Disk-based buffering (512MB per sink)
             
             ### Changes
-            See [wazuh-fluentd/CHANGELOG.md](wazuh-fluentd/CHANGELOG.md) for details.
+            See [wazuh-vector/CHANGELOG.md](wazuh-vector/CHANGELOG.md) for details.
           draft: false
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
