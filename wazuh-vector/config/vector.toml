@@ -8,15 +8,16 @@ data_dir = "/vector/data"
 [api]
 enabled = false
 
-# ============================================================================
 # SOURCES - Data Inputs
 # ============================================================================
 
-# NetFlow v5/v9 Source
-[sources.netflow]
-type = "netflow"
-address = "0.0.0.0:2055"
-# NetFlow will automatically parse v5 and v9 formats
+# NetFlow - NOT SUPPORTED BY VECTOR
+# Vector doesn't have native NetFlow support
+# Alternative: Use goflow2 or nfdump to convert NetFlow → JSON → Vector socket source
+# [sources.netflow]
+# type = "socket"
+# address = "0.0.0.0:2055"
+# mode = "udp"
 
 # MikroTik RouterOS Syslog (UDP)
 [sources.mikrotik]
@@ -40,16 +41,16 @@ mode = "tcp"
 # TRANSFORMS - Data Processing
 # ============================================================================
 
-# Enrich NetFlow data
-[transforms.netflow_enrich]
-type = "remap"
-inputs = ["netflow"]
-source = '''
-  .log_source = "netflow"
-  .vendor = "unknown"
-  .product = "netflow"
-  .timestamp = now()
-'''
+# NetFlow enrichment - DISABLED (no NetFlow source)
+# [transforms.netflow_enrich]
+# type = "remap"
+# inputs = ["netflow"]
+# source = '''
+#   .log_source = "netflow"
+#   .vendor = "unknown"
+#   .product = "netflow"
+#   .timestamp = now()
+# '''
 
 # Enrich MikroTik data
 [transforms.mikrotik_enrich]
@@ -91,39 +92,19 @@ source = '''
 # SINKS - Data Outputs
 # ============================================================================
 
-# NetFlow to OpenSearch
-[sinks.netflow_opensearch]
-type = "elasticsearch"
-inputs = ["netflow_enrich"]
-endpoint = "https://${INDEXER_HOST:?}:${INDEXER_PORT:?}"
-mode = "bulk"
-api_version = "v8"
-
-[sinks.netflow_opensearch.bulk]
-index = "anki-netflow-%Y.%m.%d"
-
-# TLS settings
-[sinks.netflow_opensearch.tls]
-verify_certificate = false
-verify_hostname = false
-
-# Authentication
-[sinks.netflow_opensearch.auth]
-strategy = "basic"
-user = "${INDEXER_USERNAME:?}"
-password = "${INDEXER_PASSWORD:?}"
-
-[sinks.netflow_opensearch.request]
-pipeline = "netflow"
-
-[sinks.netflow_opensearch.batch]
-max_events = 1000
-timeout_secs = 10
-
-[sinks.netflow_opensearch.buffer]
-type = "disk"
-max_size = 536870912
-when_full = "drop_newest"
+# NetFlow sink - DISABLED (no NetFlow source in Vector)
+# To enable NetFlow:
+# 1. Use external collector: goflow2 → JSON output
+# 2. Configure Vector socket source to receive JSON
+# 3. Uncomment and configure sink below
+# [sinks.netflow_opensearch]
+# type = "elasticsearch"
+# inputs = ["netflow_enrich"]
+# endpoint = "https://${INDEXER_HOST:?}:${INDEXER_PORT:?}"
+# mode = "bulk"
+# api_version = "v8"
+# [sinks.netflow_opensearch.bulk]
+# index = "anki-netflow-%Y.%m.%d"
 
 # MikroTik to OpenSearch
 [sinks.mikrotik_opensearch]
