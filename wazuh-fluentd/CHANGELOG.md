@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.10.4] - 2025-10-07
+
+### Changed
+- Version bump to 2.10.4
+
+
 ## [2.10.3] - 2025-10-07
 
 ### Changed
