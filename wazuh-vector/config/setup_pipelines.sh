@@ -1,11 +1,11 @@
 #!/bin/bash
-# Wazuh Fluentd Docker - Pipeline Setup Script
+# Wazuh Vector Docker - Pipeline Setup Script
 # Creates ingest pipelines in OpenSearch/Wazuh Indexer
 
 set -e
 
 INDEXER_URL="https://${INDEXER_HOST}:${INDEXER_PORT}"
-PIPELINE_DIR="/fluentd/pipelines"
+PIPELINE_DIR="/vector/pipelines"
 
 echo "=========================================="
 echo "Setting up OpenSearch Ingest Pipelines"

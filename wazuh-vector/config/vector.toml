@@ -2,10 +2,11 @@
 # Multi-source syslog and NetFlow collector
 # Version: 3.0
 
+# Global configuration
+data_dir = "/vector/data"
+
 [api]
 enabled = false
-
-data_dir = "/vector/data"
 
 # ============================================================================
 # SOURCES - Data Inputs
