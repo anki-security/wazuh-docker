@@ -112,6 +112,7 @@ strategy = "basic"
 user = "${INDEXER_USERNAME:?}"
 password = "${INDEXER_PASSWORD:?}"
 
+[sinks.netflow_opensearch.request]
 pipeline = "netflow"
 
 [sinks.netflow_opensearch.batch]
@@ -142,6 +143,7 @@ strategy = "basic"
 user = "${INDEXER_USERNAME:?}"
 password = "${INDEXER_PASSWORD:?}"
 
+[sinks.mikrotik_opensearch.request]
 pipeline = "mikrotik"
 
 [sinks.mikrotik_opensearch.batch]
@@ -172,6 +174,7 @@ strategy = "basic"
 user = "${INDEXER_USERNAME:?}"
 password = "${INDEXER_PASSWORD:?}"
 
+[sinks.generic_opensearch.request]
 pipeline = "generic-syslog"
 
 [sinks.generic_opensearch.batch]
