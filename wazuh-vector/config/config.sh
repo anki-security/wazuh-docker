@@ -41,3 +41,6 @@ echo "=========================================="
 echo "Configuration complete - Starting Vector"
 echo "=========================================="
 echo ""
+
+# Execute the command passed as arguments (from CMD)
+exec "$@"

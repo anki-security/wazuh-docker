@@ -61,5 +61,6 @@ USER vector
 # Set environment variables
 ENV VECTOR_CONFIG=/vector/config/vector.toml
 
-# Run configuration script and start vector
-CMD ["/bin/sh", "-c", "/usr/local/bin/config.sh && exec vector --config /vector/config/vector.toml"]
+# Use ENTRYPOINT for config script and CMD for vector
+ENTRYPOINT ["/usr/local/bin/config.sh"]
+CMD ["vector", "--config", "/vector/config/vector.toml"]
