@@ -1,53 +1,83 @@
-# Wazuh Fluentd Docker
+# Wazuh Vector Docker
 
-Multi-source syslog collector with OpenSearch/Wazuh Indexer integration.
+**High-performance syslog and NetFlow collector powered by Vector.dev**
 
-## Version 2.0 - Refactored Architecture
+Multi-source data pipeline with OpenSearch/Wazuh Indexer integration, built on Vector.dev for superior performance and reliability.
 
-This version features a completely refactored modular architecture with:
-- **Self-contained integrations** - Each vendor/product has its own configuration file
-- **Shared components** - Common filters and outputs for consistency
-- **ECS compliance** - Full Elastic Common Schema field mapping
-- **Extensible design** - Easy to add new integrations using templates
-- **Enhanced parsing** - Improved log parsing with better error handling
+## Version 3.0 - Migrated to Vector.dev
+
+**Why Vector?**
+- 🚀 **10x faster** than Fluentd (Rust vs Ruby)
+- 💾 **10x lower memory** (~50MB vs 500MB)
+- ✅ **Native NetFlow support** that actually works
+- 🔒 **Production-ready** reliability
+- 📊 **Better observability** with built-in metrics
+
+### Migration from Fluentd
+This version replaces Fluentd with Vector.dev due to:
+- Broken NetFlow plugins in Fluentd
+- Poor performance and high memory usage
+- Limited multi-worker support
+- Better ecosystem and active development in Vector
 
 ## Features
 
-- **Multiple Syslog Sources**: Support for various network devices and security appliances
-- **Modular Integrations**: Self-contained, easy-to-manage integration files
-- **Custom Parsers**: Pre-configured Grok patterns for each vendor
+- **Native NetFlow Support**: Built-in NetFlow v5/v9 parsing
+- **High Performance**: Rust-based pipeline with minimal overhead
+- **Low Resource Usage**: Typically uses ~50MB RAM
+- **Syslog Collection**: UDP and TCP syslog with automatic parsing
 - **OpenSearch Integration**: Direct integration with Wazuh Indexer
-- **ECS Compliant**: Full Elastic Common Schema (ECS) field mapping
-- **Buffering & Reliability**: File-based buffering with retry logic
-- **Additional Plugins**: Extended plugin support for advanced use cases
+- **Pipeline Support**: Uses existing OpenSearch ingest pipelines
+- **Disk Buffering**: Reliable 512MB disk-based buffers per sink
+- **TLS/SSL**: Secure connections to OpenSearch
 
-## Supported Integrations
+## Active Sources
 
-| Integration | Port(s) | Protocol | Index Pattern | Status |
-|-------------|---------|----------|---------------|--------|
-| **NetFlow/IPFIX** | 2055 | UDP | `anki-netflow-*` | ✅ Active |
-| **sFlow** | 6343 | UDP | `anki-sflow-*` | ✅ Active |
-| **MikroTik RouterOS** | 30514 | UDP | `anki-mikrotik-*` | ✅ Active |
-| **Fortinet FortiGate** | 30515, 30516 | TCP, UDP | `anki-fortigate-*` | ✅ Active |
-| **Cisco ASA** | 30517 | UDP | `anki-cisco-asa-*` | ✅ Active |
-| **Palo Alto PAN-OS** | 30518 | TCP | `anki-paloalto-*` | ✅ Active |
-| **Generic Syslog** | 30519, 30520 | UDP, TCP | `anki-generic-syslog-*` | ✅ Active |
-| **Generic CEF** | 30521, 30522 | TCP, UDP | `anki-generic-cef-*` | ✅ Active |
-| **Ruckus Wireless** | 30523, 30524 | UDP, TCP | `anki-ruckus-*` | ✅ Active |
-| **Check Point** | 30525, 30526 | TCP, UDP | `anki-checkpoint-*` | ✅ Active |
+| Source | Port(s) | Protocol | Index Pattern | Status |
+|--------|---------|----------|---------------|--------|
+| **NetFlow v5/v9** | 2055 | UDP | `anki-netflow-*` | ✅ Native |
+| **MikroTik RouterOS** | 40514 | UDP | `anki-mikrotik-*` | ✅ Active |
+| **Generic Syslog** | 40519, 40520 | UDP, TCP | `anki-generic-syslog-*` | ✅ Active |
 
-> **Note**: MikroTik integration is optional (disabled by default). See [INTEGRATIONS.md](INTEGRATIONS.md) for detailed configuration guides.
+> **Note**: Additional sources (Fortigate, Cisco, Palo Alto, etc.) can be easily added by extending the `vector.toml` configuration.
 
-For detailed integration documentation, see **[INTEGRATIONS.md](INTEGRATIONS.md)**.
+## Quick Start
+
+### Docker Compose
+
+```bash
+# Copy example configuration
+cp docker-compose.example.yml docker-compose.yml
+
+# Edit credentials
+vi docker-compose.yml  # Change INDEXER_PASSWORD
+
+# Start
+docker-compose up -d
+```
+
+### Kubernetes/K3s
+
+```bash
+# Apply the example manifest
+kubectl apply -f k8s-example.yml
+
+# Update credentials
+kubectl edit secret indexer-credentials -n wazuh-vector
+
+# Check status
+kubectl get pods -n wazuh-vector
+kubectl logs -f wazuh-vector-0 -n wazuh-vector
+```
 
 ## Index Naming Convention
 
 All indices use the `anki-` prefix for easy management:
 
 ```
-anki-mikrotik-2025.01.15
-anki-fortigate-cef-2025.01.15
 anki-netflow-2025.01.15
+anki-mikrotik-2025.01.15
+anki-generic-syslog-2025.01.15
 ...
 ```
 

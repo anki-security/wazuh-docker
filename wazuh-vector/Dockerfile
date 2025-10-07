@@ -20,11 +20,10 @@ RUN apt-get update && \
     ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-# Create necessary directories
+# Create necessary directories (as root, will set permissions later)
 RUN mkdir -p /vector/config \
     /vector/data \
-    /vector/pipelines && \
-    chown -R vector:vector /vector
+    /vector/pipelines
 
 # Copy configuration files
 COPY config/vector.toml /vector/config/vector.toml
@@ -36,8 +35,12 @@ COPY config/setup_pipelines.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/config.sh \
     /usr/local/bin/setup_pipelines.sh
 
-# Set proper permissions
-RUN chown -R vector:vector /vector
+# Set proper permissions (check if vector user exists, if not use root)
+RUN if id vector >/dev/null 2>&1; then \
+        chown -R vector:vector /vector; \
+    else \
+        echo "Vector user not found, using root permissions"; \
+    fi
 
 # Expose ports for different sources
 # 2055 - NetFlow (UDP)
@@ -46,7 +49,13 @@ RUN chown -R vector:vector /vector
 # 40520 - Generic Syslog (TCP)
 EXPOSE 2055/udp 40514/udp 40519/udp 40520/tcp
 
-# Switch to vector user
+# Switch to vector user if it exists, otherwise stay as root
+RUN if id vector >/dev/null 2>&1; then \
+        echo "Switching to vector user"; \
+    else \
+        echo "Vector user not found, will run as root"; \
+    fi
+
 USER vector
 
 # Set environment variables

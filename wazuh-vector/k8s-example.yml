@@ -1,0 +1,203 @@
+# Kubernetes/K3s Example for Wazuh Vector
+# High-performance syslog and NetFlow collector
+# 
+# Usage:
+#   kubectl apply -f k8s-example.yml
+#
+# Features:
+# - StatefulSet with persistent storage
+# - hostNetwork for direct port access
+# - Auto-setup of OpenSearch pipelines
+# - Resource limits optimized for Vector
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: wazuh-vector
+  labels:
+    app: wazuh-vector
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: indexer-credentials
+  namespace: wazuh-vector
+type: Opaque
+stringData:
+  INDEXER_USERNAME: "admin"
+  INDEXER_PASSWORD: "SecretPassword"  # Change this!
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wazuh-vector
+  namespace: wazuh-vector
+  labels:
+    app: wazuh-vector
+spec:
+  type: ClusterIP
+  clusterIP: None  # Headless service
+  selector:
+    app: wazuh-vector
+  ports:
+    - name: netflow
+      port: 2055
+      protocol: UDP
+    - name: mikrotik
+      port: 40514
+      protocol: UDP
+    - name: syslog-udp
+      port: 40519
+      protocol: UDP
+    - name: syslog-tcp
+      port: 40520
+      protocol: TCP
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: wazuh-vector
+  namespace: wazuh-vector
+  labels:
+    app: wazuh-vector
+spec:
+  serviceName: wazuh-vector
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wazuh-vector
+  template:
+    metadata:
+      labels:
+        app: wazuh-vector
+    spec:
+      # Use host network for direct port access (recommended for syslog/netflow)
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      
+      containers:
+      - name: vector
+        image: ghcr.io/anki-security/wazuh-vector:latest
+        imagePullPolicy: Always
+        
+        ports:
+        - containerPort: 2055
+          protocol: UDP
+          name: netflow
+        - containerPort: 40514
+          protocol: UDP
+          name: mikrotik
+        - containerPort: 40519
+          protocol: UDP
+          name: syslog-udp
+        - containerPort: 40520
+          protocol: TCP
+          name: syslog-tcp
+        
+        env:
+        # Indexer connection
+        - name: INDEXER_HOST
+          value: "wazuh-indexer.wazuh.svc.cluster.local"  # Adjust namespace
+        - name: INDEXER_PORT
+          value: "9200"
+        - name: INDEXER_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: indexer-credentials
+              key: INDEXER_USERNAME
+        - name: INDEXER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: indexer-credentials
+              key: INDEXER_PASSWORD
+        
+        # Pipeline setup
+        - name: SETUP_PIPELINES
+          value: "true"
+        
+        volumeMounts:
+        - name: vector-data
+          mountPath: /vector/data
+        
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi  # Vector uses ~50MB typically
+        
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pgrep -f vector
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pgrep -f vector
+          initialDelaySeconds: 10
+          periodSeconds: 10
+  
+  volumeClaimTemplates:
+  - metadata:
+      name: vector-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: local-path  # Adjust for your cluster
+      resources:
+        requests:
+          storage: 2Gi
+
+---
+# Optional: NetworkPolicy for security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: wazuh-vector-policy
+  namespace: wazuh-vector
+spec:
+  podSelector:
+    matchLabels:
+      app: wazuh-vector
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow syslog/netflow from anywhere (adjust as needed)
+  - from:
+    - podSelector: {}
+    ports:
+    - protocol: UDP
+      port: 2055
+    - protocol: UDP
+      port: 40514
+    - protocol: UDP
+      port: 40519
+    - protocol: TCP
+      port: 40520
+  egress:
+  # Allow connection to Wazuh Indexer
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: wazuh
+    ports:
+    - protocol: TCP
+      port: 9200
+  # Allow DNS
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: UDP
+      port: 53

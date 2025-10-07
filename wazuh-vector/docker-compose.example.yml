@@ -1,71 +1,56 @@
 version: "3.8"
 
-# Example Docker Compose configuration for Wazuh Fluentd
+# Example Docker Compose configuration for Wazuh Vector
+# High-performance data pipeline for syslog and NetFlow collection
 # This can be used standalone or integrated with your Wazuh stack
 
 services:
-  wazuh-fluentd:
-    image: wazuh/wazuh-fluentd:4.13.1
-    container_name: wazuh-fluentd
-    hostname: wazuh-fluentd
+  wazuh-vector:
+    image: ghcr.io/anki-security/wazuh-vector:latest
+    container_name: wazuh-vector
+    hostname: wazuh-vector
     restart: unless-stopped
 
-    # Expose all syslog ports
+    # Expose active ports (optimized for essential sources)
     ports:
-      - "30514:30514/udp" # MikroTik RouterOS
-      - "30515:30515/tcp" # Fortigate CEF
-      - "30516:30516/udp" # Fortigate Syslog
-      - "30517:30517/udp" # Cisco ASA
-      - "30518:30518/tcp" # Palo Alto PAN-OS
-      - "30519:30519/udp" # Generic Syslog
-      - "30520:30520/tcp" # Generic Syslog
-      - "30521:30521/tcp" # Generic CEF
-      - "30522:30522/udp" # Generic CEF
-      - "30523:30523/udp" # Ruckus Wireless
-      - "30524:30524/tcp" # Ruckus Wireless
-      - "30525:30525/tcp" # Check Point CEF
-      - "30526:30526/udp" # Check Point Syslog
+      - "2055:2055/udp"     # NetFlow v5/v9
+      - "40514:40514/udp"   # MikroTik RouterOS
+      - "40519:40519/udp"   # Generic Syslog (UDP)
+      - "40520:40520/tcp"   # Generic Syslog (TCP)
 
     environment:
-      # Required: Wazuh Indexer connection
+      # Required: Wazuh Indexer/OpenSearch connection
       - INDEXER_HOST=wazuh-indexer
       - INDEXER_PORT=9200
       - INDEXER_USERNAME=admin
       - INDEXER_PASSWORD=SecretPassword # Change this!
 
       # Optional: Pipeline setup
-      - SETUP_PIPELINES=true # Auto-create pipelines on startup
-
-      # Optional: Fluentd configuration
-      - FLUENTD_LOG_LEVEL=info # debug, info, warn, error
-      - FLUENTD_WORKERS=1 # Increase for high-volume
+      - SETUP_PIPELINES=true # Auto-create OpenSearch pipelines on startup
 
     volumes:
       # Persistent buffer storage (recommended)
-      - fluentd-buffer:/fluentd/buffer
-      - fluentd-logs:/fluentd/log
+      - vector-data:/vector/data
 
-      # Optional: Custom configurations
-      # - ./custom-conf.d:/fluentd/etc/conf.d:ro
-      # - ./custom-pipelines:/fluentd/pipelines:ro
+      # Optional: Custom Vector configuration
+      # - ./custom-vector.toml:/vector/config/vector.toml:ro
+      # - ./custom-pipelines:/vector/pipelines:ro
 
     networks:
       - wazuh
 
-    # Optional: Resource limits
+    # Optional: Resource limits (Vector uses much less than Fluentd!)
     deploy:
       resources:
         limits:
-          cpus: "1.0"
-          memory: 512M
-        reservations:
           cpus: "0.5"
-          memory: 256M
+          memory: 256M  # Vector typically uses ~50MB
+        reservations:
+          cpus: "0.25"
+          memory: 128M
 
 volumes:
-  fluentd-buffer:
-    driver: local
-  fluentd-logs:
+  vector-data:
     driver: local
 
 networks:
