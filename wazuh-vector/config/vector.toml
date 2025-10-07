@@ -104,7 +104,6 @@ index = "anki-netflow-%Y.%m.%d"
 
 # TLS settings
 [sinks.netflow_opensearch.tls]
-enabled = true
 verify_certificate = false
 verify_hostname = false
 
@@ -138,7 +137,6 @@ api_version = "v8"
 index = "anki-mikrotik-%Y.%m.%d"
 
 [sinks.mikrotik_opensearch.tls]
-enabled = true
 verify_certificate = false
 verify_hostname = false
 
@@ -171,7 +169,6 @@ api_version = "v8"
 index = "anki-generic-syslog-%Y.%m.%d"
 
 [sinks.generic_opensearch.tls]
-enabled = true
 verify_certificate = false
 verify_hostname = false
 
