@@ -144,10 +144,10 @@ spec:
         resources:
           requests:
             cpu: 250m
-            memory: 256Mi
+            memory: 512Mi
           limits:
             cpu: 1000m
-            memory: 512Mi
+            memory: 1Gi
         
         livenessProbe:
           exec:
@@ -172,7 +172,7 @@ spec:
       storageClassName: local-path  # Adjust for your cluster
       resources:
         requests:
-          storage: 2Gi
+          storage: 5Gi
   - metadata:
       name: fluentd-log
     spec:
