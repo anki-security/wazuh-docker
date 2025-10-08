@@ -5,7 +5,7 @@
 <worker 7>
   <source>
     @type udp
-    port 40523
+    port 30523
     bind 0.0.0.0
     tag ruckus.syslog
     source_address_key source_ip
@@ -16,7 +16,7 @@
 
   <source>
     @type tcp
-    port 40524
+    port 30524
     bind 0.0.0.0
     tag ruckus.syslog
     <parse>

@@ -6,7 +6,7 @@
 <worker 2>
   <source>
     @type udp
-    port 40516
+    port 30516
     bind 0.0.0.0
     tag fortigate.syslog
     source_address_key source_ip

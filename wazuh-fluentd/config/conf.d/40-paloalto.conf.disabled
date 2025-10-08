@@ -5,7 +5,7 @@
 <worker 4>
   <source>
     @type tcp
-    port 40518
+    port 30518
     bind 0.0.0.0
     tag paloalto.syslog
     <parse>

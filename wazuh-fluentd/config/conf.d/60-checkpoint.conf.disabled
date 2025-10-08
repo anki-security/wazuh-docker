@@ -5,7 +5,7 @@
 <worker 8>
   <source>
     @type tcp
-    port 40525
+    port 30525
     bind 0.0.0.0
     tag checkpoint.cef
     <parse>
@@ -15,7 +15,7 @@
 
   <source>
     @type udp
-    port 40526
+    port 30526
     bind 0.0.0.0
     tag checkpoint.syslog
     source_address_key source_ip

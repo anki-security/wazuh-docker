@@ -47,13 +47,13 @@ spec:
       port: 2055
       protocol: UDP
     - name: mikrotik
-      port: 40514
+      port: 30514
       protocol: UDP
     - name: syslog-udp
-      port: 40519
+      port: 30519
       protocol: UDP
     - name: syslog-tcp
-      port: 40520
+      port: 30520
       protocol: TCP
 
 ---
@@ -96,13 +96,13 @@ spec:
         - containerPort: 2055
           protocol: UDP
           name: netflow
-        - containerPort: 40514
+        - containerPort: 30514
           protocol: UDP
           name: mikrotik
-        - containerPort: 40519
+        - containerPort: 30519
           protocol: UDP
           name: syslog-udp
-        - containerPort: 40520
+        - containerPort: 30520
           protocol: TCP
           name: syslog-tcp
         
@@ -160,7 +160,7 @@ spec:
         
         readinessProbe:
           tcpSocket:
-            port: 40520
+            port: 30520
           initialDelaySeconds: 10
           periodSeconds: 10
   
@@ -204,11 +204,11 @@ spec:
     - protocol: UDP
       port: 2055
     - protocol: UDP
-      port: 40514
+      port: 30514
     - protocol: UDP
-      port: 40519
+      port: 30519
     - protocol: TCP
-      port: 40520
+      port: 30520
   egress:
   # Allow connection to Wazuh Indexer
   - to:

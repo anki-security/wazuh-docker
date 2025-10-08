@@ -6,7 +6,7 @@
 <worker 6>
   <source>
     @type tcp
-    port 40521
+    port 30521
     bind 0.0.0.0
     tag generic.cef
     <parse>
@@ -16,7 +16,7 @@
 
   <source>
     @type udp
-    port 40522
+    port 30522
     bind 0.0.0.0
     tag generic.cef
     source_address_key source_ip

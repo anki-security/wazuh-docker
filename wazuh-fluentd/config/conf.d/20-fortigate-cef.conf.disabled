@@ -6,7 +6,7 @@
 <worker 1>
   <source>
     @type tcp
-    port 40515
+    port 30515
     bind 0.0.0.0
     tag fortigate.cef
     <parse>
