@@ -60,7 +60,7 @@ source = '''
   .log_source = "mikrotik"
   .vendor = "mikrotik"
   .product = "routeros"
-  .hostname = .host ?? "unknown"
+  .hostname = .host
   .timestamp = now()
 '''
 
@@ -72,7 +72,7 @@ source = '''
   .log_source = "generic"
   .vendor = "unknown"
   .product = "syslog"
-  .hostname = .host ?? "unknown"
+  .hostname = .host
   .timestamp = now()
 '''
 
@@ -84,7 +84,7 @@ source = '''
   .log_source = "generic"
   .vendor = "unknown"
   .product = "syslog"
-  .hostname = .host ?? "unknown"
+  .hostname = .host
   .timestamp = now()
 '''
 
