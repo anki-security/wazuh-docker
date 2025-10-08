@@ -1,0 +1,124 @@
+{
+  "description": "Fortigate Syslog Parsing Pipeline",
+  "processors": [
+    {
+      "grok": {
+        "field": "message",
+        "patterns": [
+          "^<%{POSINT:log.syslog.priority}>%{SYSLOGTIMESTAMP:syslog.timestamp} %{DATA:observer.hostname} date=%{DATA:event.created} time=%{DATA:event.time} devname=\"%{DATA:observer.name}\" devid=\"%{DATA:observer.serial_number}\" logid=\"%{DATA:event.code}\" type=\"%{DATA:event.type}\" subtype=\"%{DATA:event.category}\" level=\"%{DATA:log.level}\" vd=\"%{DATA:observer.vdom}\" eventtime=%{NUMBER:event.timestamp} srcip=%{IP:source.ip} srcport=%{INT:source.port} srcintf=\"%{DATA:observer.ingress.interface.name}\" srcintfrole=\"%{DATA:observer.ingress.interface.role}\" dstip=%{IP:destination.ip} dstport=%{INT:destination.port} dstintf=\"%{DATA:observer.egress.interface.name}\" dstintfrole=\"%{DATA:observer.egress.interface.role}\" sessionid=%{INT:network.session.id} proto=%{INT:network.iana_number} action=\"%{DATA:event.action}\" policyid=%{INT:rule.id} policytype=\"%{DATA:rule.type}\" service=\"%{DATA:network.application}\" dstcountry=\"%{DATA:destination.geo.country_name}\" srccountry=\"%{DATA:source.geo.country_name}\" trandisp=\"%{DATA:event.outcome}\" duration=%{INT:event.duration} sentbyte=%{INT:source.bytes} rcvdbyte=%{INT:destination.bytes} sentpkt=%{INT:source.packets} appcat=\"%{DATA:network.application.category}\"",
+          "^<%{POSINT:log.syslog.priority}>%{SYSLOGTIMESTAMP:syslog.timestamp} %{DATA:observer.hostname} date=%{DATA:event.created} time=%{DATA:event.time} devname=\"%{DATA:observer.name}\" devid=\"%{DATA:observer.serial_number}\" logid=\"%{DATA:event.code}\" type=\"%{DATA:event.type}\" subtype=\"%{DATA:event.category}\" level=\"%{DATA:log.level}\" %{GREEDYDATA:message.remainder}"
+        ],
+        "ignore_failure": true
+      }
+    },
+    {
+      "convert": {
+        "field": "source.port",
+        "type": "long",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "convert": {
+        "field": "destination.port",
+        "type": "long",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "convert": {
+        "field": "source.bytes",
+        "type": "long",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "convert": {
+        "field": "destination.bytes",
+        "type": "long",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "convert": {
+        "field": "source.packets",
+        "type": "long",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "convert": {
+        "field": "event.duration",
+        "type": "long",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "script": {
+        "lang": "painless",
+        "source": "if (ctx.network?.iana_number != null) { def proto = ctx.network.iana_number; if (proto == 6) { ctx.network.transport = 'tcp'; } else if (proto == 17) { ctx.network.transport = 'udp'; } else if (proto == 1) { ctx.network.transport = 'icmp'; } }",
+        "ignore_failure": true
+      }
+    },
+    {
+      "geoip": {
+        "field": "source.ip",
+        "target_field": "source.geo",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "geoip": {
+        "field": "destination.ip",
+        "target_field": "destination.geo",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "set": {
+        "field": "observer.vendor",
+        "value": "Fortinet"
+      }
+    },
+    {
+      "set": {
+        "field": "observer.product",
+        "value": "Fortigate"
+      }
+    },
+    {
+      "set": {
+        "field": "observer.type",
+        "value": "firewall"
+      }
+    },
+    {
+      "set": {
+        "field": "ecs.version",
+        "value": "8.12.0"
+      }
+    }
+  ],
+  "on_failure": [
+    {
+      "set": {
+        "field": "error.message",
+        "value": "{{ _ingest.on_failure_message }}"
+      }
+    },
+    {
+      "set": {
+        "field": "event.kind",
+        "value": "pipeline_error"
+      }
+    }
+  ]
+}

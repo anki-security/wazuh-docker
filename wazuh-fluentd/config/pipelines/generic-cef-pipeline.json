@@ -1,0 +1,177 @@
+{
+  "description": "Generic CEF (Common Event Format) parsing pipeline",
+  "processors": [
+    {
+      "grok": {
+        "field": "message",
+        "patterns": [
+          "(?:%{SYSLOG5424PRI:syslog_pri})?(?:%{SYSLOGTIMESTAMP:syslog_timestamp}|%{TIMESTAMP_ISO8601:syslog_timestamp})? ?(?:%{SYSLOGHOST:syslog_host})? ?CEF:%{DATA:cef_version}\\|%{DATA:device_vendor}\\|%{DATA:device_product}\\|%{DATA:device_version}\\|%{DATA:signature_id}\\|%{DATA:cef_name}\\|%{DATA:cef_severity}\\|%{GREEDYDATA:cef_extension}"
+        ],
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "kv": {
+        "field": "cef_extension",
+        "field_split": " ",
+        "value_split": "=",
+        "target_field": "cef.ext",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "device_vendor",
+        "target_field": "observer.vendor",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "device_product",
+        "target_field": "observer.product",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "device_version",
+        "target_field": "observer.version",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef_name",
+        "target_field": "event.action",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "signature_id",
+        "target_field": "event.code",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.ext.src",
+        "target_field": "source.ip",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.ext.dst",
+        "target_field": "destination.ip",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.ext.spt",
+        "target_field": "source.port",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.ext.dpt",
+        "target_field": "destination.port",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.ext.proto",
+        "target_field": "network.transport",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.ext.suser",
+        "target_field": "source.user.name",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "cef.ext.duser",
+        "target_field": "destination.user.name",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "convert": {
+        "field": "source.port",
+        "type": "long",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "convert": {
+        "field": "destination.port",
+        "type": "long",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "convert": {
+        "field": "cef_severity",
+        "type": "long",
+        "target_field": "event.severity",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "set": {
+        "field": "event.kind",
+        "value": "event"
+      }
+    },
+    {
+      "set": {
+        "field": "event.category",
+        "value": ["network"]
+      }
+    },
+    {
+      "date": {
+        "field": "syslog_timestamp",
+        "target_field": "@timestamp",
+        "formats": [
+          "MMM dd HH:mm:ss",
+          "MMM  d HH:mm:ss",
+          "ISO8601"
+        ],
+        "ignore_failure": true
+      }
+    },
+    {
+      "remove": {
+        "field": ["cef_extension", "syslog_timestamp", "syslog_pri", "cef_version"],
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    }
+  ]
+}
