@@ -1,0 +1,356 @@
+{
+  "description": "VMware ESXi Syslog Parsing Pipeline - Enhanced with ECS fields",
+  "processors": [
+    {
+      "grok": {
+        "field": "message",
+        "patterns": [
+          "^vmware-esxi: \\S+ %{TIMESTAMP_ISO8601:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : SSH session was opened for '%{USERNAME:user.name}@%{IP:source.ip}'",
+          "^vmware-esxi: \\S+ %{TIMESTAMP_ISO8601:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : SSH login has failed for '%{USERNAME:user.name}@%{IP:source.ip}'",
+          "^vmware-esxi: \\S+ %{TIMESTAMP_ISO8601:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : SSH session was closed for '%{USERNAME:user.name}@%{IP:source.ip}'",
+          "^vmware-esxi: \\S+ %{TIMESTAMP_ISO8601:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : %{DATA:vm.name} on  %{DATA:esxi.vm_host} in %{DATA:esxi.datacenter} is powered off",
+          "^vmware-esxi: \\S+ %{TIMESTAMP_ISO8601:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : %{DATA:vm.name} on %{DATA:esxi.vm_host} in %{DATA:esxi.datacenter} has powered on",
+          "^vmware-esxi: \\S+ %{TIMESTAMP_ISO8601:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : User %{USERNAME:user.name}@%{IP:source.ip} logged in",
+          "^vmware-esxi: \\S+ %{TIMESTAMP_ISO8601:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : Cannot login %{USERNAME:user.name}@%{IP:source.ip}",
+          "^vmware-esxi: \\S+ %{TIMESTAMP_ISO8601:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : User %{USERNAME:user.name}@%{IP:source.ip} logged out",
+          "^vmware-esxi: \\S+ %{TIMESTAMP_ISO8601:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : Guest OS shut down for %{DATA:vm.name} on %{DATA:esxi.vm_host} in %{DATA:esxi.datacenter}",
+          "^vmware-esxi: \\S+ %{TIMESTAMP_ISO8601:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : Guest OS reboot for %{DATA:vm.name} on %{DATA:esxi.vm_host} in %{DATA:esxi.datacenter}",
+          "^vmware-esxi: \\S+ %{TIMESTAMP_ISO8601:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : Created virtual machine %{DATA:vm.name} on %{DATA:esxi.vm_host}",
+          "^vmware-esxi: \\S+ %{TIMESTAMP_ISO8601:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : Removed %{DATA:vm.name} on %{DATA:esxi.vm_host} from %{DATA:esxi.datacenter}",
+          "^vmware-esxi: \\S+ %{TIMESTAMP_ISO8601:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : Registered %{DATA:vm.name} on %{DATA:esxi.vm_host} in %{DATA:esxi.datacenter}",
+          "^vmware-esxi: \\S+ %{TIMESTAMP_ISO8601:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : File upload to path '\\[%{GREEDYDATA:file.path}' was initiated",
+          "^vmware-esxi: \\S+ %{TIMESTAMP_ISO8601:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : Deletion of file or directory %{DATA:file.path} from %{DATA:esxi.disk} was initiated",
+          "^vmware-esxi: \\S+ %{TIMESTAMP_ISO8601:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : Account %{USERNAME:user.name} was created on host %{DATA:esxi.host_target}",
+          "^vmware-esxi: \\S+ %{TIMESTAMP_ISO8601:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : Password was changed for account %{USERNAME:user.name} on host %{DATA:esxi.host_target}",
+          "^vmware-esxi: \\S+ %{TIMESTAMP_ISO8601:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : Account %{USERNAME:user.name} was removed on host %{DATA:esxi.host_target}",
+          "^vmware-esxi: \\S+ %{TIMESTAMP_ISO8601:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: : \\[%{USERNAME:user.name}\\]: %{GREEDYDATA:esxi.command}$",
+          "^vmware-esxi: \\S+ %{TIMESTAMP_ISO8601:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]:",
+          "^vmware-esxi: \\S+ %{TIMESTAMP_ISO8601:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}:",
+          "^vmware-esxi: \\S+ %{SYSLOGTIMESTAMP:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : SSH session was opened for '%{USERNAME:user.name}@%{IP:source.ip}'",
+          "^vmware-esxi: \\S+ %{SYSLOGTIMESTAMP:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : SSH login has failed for '%{USERNAME:user.name}@%{IP:source.ip}'",
+          "^vmware-esxi: \\S+ %{SYSLOGTIMESTAMP:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : SSH session was closed for '%{USERNAME:user.name}@%{IP:source.ip}'",
+          "^vmware-esxi: \\S+ %{SYSLOGTIMESTAMP:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : User %{USERNAME:user.name}@%{IP:source.ip} logged in",
+          "^vmware-esxi: \\S+ %{SYSLOGTIMESTAMP:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : Cannot login %{USERNAME:user.name}@%{IP:source.ip}",
+          "^vmware-esxi: \\S+ %{SYSLOGTIMESTAMP:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]: Event %{INT:event.id} : User %{USERNAME:user.name}@%{IP:source.ip} logged out",
+          "^vmware-esxi: \\S+ %{SYSLOGTIMESTAMP:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}\\[%{INT:process.pid}\\]:",
+          "^vmware-esxi: \\S+ %{SYSLOGTIMESTAMP:log.timestamp} %{DATA:esxi.host} %{DATA:process.name}:",
+          "^%{GREEDYDATA:message.unparsed}$"
+        ],
+        "ignore_failure": true
+      }
+    },
+    {
+      "convert": {
+        "field": "process.pid",
+        "type": "long",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "convert": {
+        "field": "event.id",
+        "type": "string",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "set": {
+        "field": "event.action",
+        "value": "ssh-session-opened",
+        "if": "ctx.message?.contains('SSH session was opened')"
+      }
+    },
+    {
+      "set": {
+        "field": "event.action",
+        "value": "ssh-login-failed",
+        "if": "ctx.message?.contains('SSH login has failed')"
+      }
+    },
+    {
+      "set": {
+        "field": "event.action",
+        "value": "ssh-session-closed",
+        "if": "ctx.message?.contains('SSH session was closed')"
+      }
+    },
+    {
+      "set": {
+        "field": "event.action",
+        "value": "vm-powered-off",
+        "if": "ctx.message?.contains('is powered off')"
+      }
+    },
+    {
+      "set": {
+        "field": "event.action",
+        "value": "vm-powered-on",
+        "if": "ctx.message?.contains('has powered on')"
+      }
+    },
+    {
+      "set": {
+        "field": "event.action",
+        "value": "user-login",
+        "if": "ctx.message?.contains('User') && ctx.message?.contains('logged in')"
+      }
+    },
+    {
+      "set": {
+        "field": "event.action",
+        "value": "user-login-failed",
+        "if": "ctx.message?.contains('Cannot login')"
+      }
+    },
+    {
+      "set": {
+        "field": "event.action",
+        "value": "user-logout",
+        "if": "ctx.message?.contains('logged out')"
+      }
+    },
+    {
+      "set": {
+        "field": "event.action",
+        "value": "vm-shutdown",
+        "if": "ctx.message?.contains('Guest OS shut down')"
+      }
+    },
+    {
+      "set": {
+        "field": "event.action",
+        "value": "vm-reboot",
+        "if": "ctx.message?.contains('Guest OS reboot')"
+      }
+    },
+    {
+      "set": {
+        "field": "event.action",
+        "value": "vm-created",
+        "if": "ctx.message?.contains('Created virtual machine')"
+      }
+    },
+    {
+      "set": {
+        "field": "event.action",
+        "value": "vm-removed",
+        "if": "ctx.message?.contains('Removed') && ctx.message?.contains('from')"
+      }
+    },
+    {
+      "set": {
+        "field": "event.action",
+        "value": "vm-registered",
+        "if": "ctx.message?.contains('Registered')"
+      }
+    },
+    {
+      "set": {
+        "field": "event.action",
+        "value": "file-upload",
+        "if": "ctx.message?.contains('File upload')"
+      }
+    },
+    {
+      "set": {
+        "field": "event.action",
+        "value": "file-deletion",
+        "if": "ctx.message?.contains('Deletion of file')"
+      }
+    },
+    {
+      "set": {
+        "field": "event.action",
+        "value": "account-created",
+        "if": "ctx.message?.contains('Account') && ctx.message?.contains('was created')"
+      }
+    },
+    {
+      "set": {
+        "field": "event.action",
+        "value": "password-changed",
+        "if": "ctx.message?.contains('Password was changed')"
+      }
+    },
+    {
+      "set": {
+        "field": "event.action",
+        "value": "account-removed",
+        "if": "ctx.message?.contains('Account') && ctx.message?.contains('was removed')"
+      }
+    },
+    {
+      "append": {
+        "field": "event.category",
+        "value": ["authentication"],
+        "if": "ctx.message?.contains('logged in') || ctx.message?.contains('logged out') || ctx.message?.contains('login') || ctx.message?.contains('SSH session')",
+        "allow_duplicates": false
+      }
+    },
+    {
+      "append": {
+        "field": "event.category",
+        "value": ["iam"],
+        "if": "ctx.message?.contains('Account') || ctx.message?.contains('Password was changed')",
+        "allow_duplicates": false
+      }
+    },
+    {
+      "append": {
+        "field": "event.category",
+        "value": ["file"],
+        "if": "ctx.message?.contains('File upload') || ctx.message?.contains('Deletion of file')",
+        "allow_duplicates": false
+      }
+    },
+    {
+      "append": {
+        "field": "event.category",
+        "value": ["host"],
+        "if": "ctx.vm?.name != null || ctx.message?.contains('virtual machine')",
+        "allow_duplicates": false
+      }
+    },
+    {
+      "append": {
+        "field": "event.type",
+        "value": ["start"],
+        "if": "ctx.message?.contains('logged in') || ctx.message?.contains('SSH session was opened') || ctx.message?.contains('powered on')",
+        "allow_duplicates": false
+      }
+    },
+    {
+      "append": {
+        "field": "event.type",
+        "value": ["end"],
+        "if": "ctx.message?.contains('logged out') || ctx.message?.contains('SSH session was closed') || ctx.message?.contains('powered off') || ctx.message?.contains('shut down')",
+        "allow_duplicates": false
+      }
+    },
+    {
+      "append": {
+        "field": "event.type",
+        "value": ["creation"],
+        "if": "ctx.message?.contains('Created virtual machine') || ctx.message?.contains('Account') && ctx.message?.contains('was created')",
+        "allow_duplicates": false
+      }
+    },
+    {
+      "append": {
+        "field": "event.type",
+        "value": ["deletion"],
+        "if": "ctx.message?.contains('Removed') || ctx.message?.contains('Deletion') || ctx.message?.contains('was removed')",
+        "allow_duplicates": false
+      }
+    },
+    {
+      "append": {
+        "field": "event.type",
+        "value": ["change"],
+        "if": "ctx.message?.contains('Password was changed')",
+        "allow_duplicates": false
+      }
+    },
+    {
+      "set": {
+        "field": "event.outcome",
+        "value": "success",
+        "if": "ctx.message?.contains('logged in') || ctx.message?.contains('SSH session was opened') || ctx.message?.contains('powered on') || ctx.message?.contains('Created') || ctx.message?.contains('was created')"
+      }
+    },
+    {
+      "set": {
+        "field": "event.outcome",
+        "value": "failure",
+        "if": "ctx.message?.contains('login has failed') || ctx.message?.contains('Cannot login')"
+      }
+    },
+    {
+      "geoip": {
+        "field": "source.ip",
+        "target_field": "source.geo",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "geoip": {
+        "database_file": "GeoLite2-ASN.mmdb",
+        "field": "source.ip",
+        "target_field": "source.as",
+        "properties": ["asn", "organization_name"],
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "source.as.asn",
+        "target_field": "source.as.number",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "field": "source.as.organization_name",
+        "target_field": "source.as.organization.name",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "set": {
+        "field": "observer.vendor",
+        "value": "VMware"
+      }
+    },
+    {
+      "set": {
+        "field": "observer.product",
+        "value": "ESXi"
+      }
+    },
+    {
+      "set": {
+        "field": "observer.type",
+        "value": "hypervisor"
+      }
+    },
+    {
+      "set": {
+        "field": "ecs.version",
+        "value": "8.12.0"
+      }
+    },
+    {
+      "remove": {
+        "field": ["message.unparsed"],
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "pipeline": {
+        "name": "logs-vmware-esxi.syslog@custom",
+        "ignore_failure": true
+      }
+    }
+  ],
+  "on_failure": [
+    {
+      "set": {
+        "field": "error.message",
+        "value": "{{ _ingest.on_failure_message }}"
+      }
+    },
+    {
+      "set": {
+        "field": "event.kind",
+        "value": "pipeline_error"
+      }
+    }
+  ]
+}

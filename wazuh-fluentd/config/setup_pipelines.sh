@@ -108,6 +108,13 @@ else
 fi
 TOTAL=$((TOTAL + 1))
 
+if create_pipeline "vmware-esxi" "${PIPELINE_DIR}/vmware-esxi-pipeline.json"; then
+    SUCCESS=$((SUCCESS + 1))
+else
+    FAILED=$((FAILED + 1))
+fi
+TOTAL=$((TOTAL + 1))
+
 if create_pipeline "fortigate-cef" "${PIPELINE_DIR}/fortigate-cef-pipeline.json"; then
     SUCCESS=$((SUCCESS + 1))
 else
