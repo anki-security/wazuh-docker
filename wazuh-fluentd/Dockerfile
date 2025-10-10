@@ -27,6 +27,7 @@ RUN gem install fluent-plugin-opensearch --no-document && \
     gem install fluent-plugin-netflow --no-document && \
     gem install fluent-plugin-grok-parser --no-document && \
     gem install fluent-plugin-multi-format-parser --no-document && \
+    gem install fluent-plugin-remote_syslog --no-document && \
     gem sources --clear-all
 
 # Create necessary directories
