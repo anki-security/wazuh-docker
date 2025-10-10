@@ -27,6 +27,7 @@ RUN --mount=type=cache,target=/root/.gem \
     gem install fluent-plugin-opensearch -v 1.1.4 --no-document && \
     gem install fluent-plugin-netflow --no-document && \
     gem install fluent-plugin-grok-parser --no-document && \
+    gem install fluent-plugin-parser-multiformat --no-document && \
     gem sources --clear-all
 
 # Create necessary directories
