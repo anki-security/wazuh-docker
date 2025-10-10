@@ -3,10 +3,16 @@ name: Build and Push Wazuh Docker Images
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Wazuh version to build'
-        required: false
-        default: '4.13.1'
+      bump_type:
+        description: "Version bump type (or 'none' to use current)"
+        required: true
+        default: "none"
+        type: choice
+        options:
+          - none
+          - patch
+          - minor
+          - major
       push_images:
         description: 'Push images to registry'
         type: boolean
@@ -20,12 +26,57 @@ jobs:
   build-and-push:
     runs-on: ubuntu-22.04
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read current version
+        id: current_version
+        run: |
+          CURRENT_VERSION=$(jq -r '.version' VERSION.json)
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $CURRENT_VERSION"
+          
+      - name: Bump version
+        id: bump_version
+        run: |
+          CURRENT_VERSION="${{ steps.current_version.outputs.version }}"
+          
+          if [ "${{ github.event.inputs.bump_type }}" == "none" ]; then
+            NEW_VERSION="$CURRENT_VERSION"
+            echo "Using current version: $NEW_VERSION"
+          else
+            IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+            
+            case "${{ github.event.inputs.bump_type }}" in
+              major)
+                major=$((major + 1))
+                minor=0
+                patch=0
+                ;;
+              minor)
+                minor=$((minor + 1))
+                patch=0
+                ;;
+              patch)
+                patch=$((patch + 1))
+                ;;
+            esac
+            
+            NEW_VERSION="${major}.${minor}.${patch}"
+            echo "Bumped version: $CURRENT_VERSION -> $NEW_VERSION"
+            
+            # Update VERSION.json
+            jq --arg version "$NEW_VERSION" '.version = $version' VERSION.json > VERSION.json.tmp
+            mv VERSION.json.tmp VERSION.json
+          fi
+          
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -38,25 +89,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract version
-        id: version
-        run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            VERSION="${{ inputs.version }}"
-          else
-            VERSION=$(jq -r '.version' VERSION.json)
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Building version: $VERSION"
-
       - name: Build Wazuh images
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ steps.bump_version.outputs.version }}"
           ./build-images.sh -v $VERSION
 
       - name: Tag images for GHCR
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ steps.bump_version.outputs.version }}"
           
           # Tag wazuh-manager
           docker tag wazuh/wazuh-manager:$VERSION ${{ env.IMAGE_PREFIX }}/wazuh-manager:$VERSION
@@ -73,7 +113,7 @@ jobs:
       - name: Push images to GHCR
         if: github.event_name != 'pull_request' && (github.event_name != 'workflow_dispatch' || inputs.push_images)
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ steps.bump_version.outputs.version }}"
           
           echo "Pushing wazuh-manager..."
           docker push ${{ env.IMAGE_PREFIX }}/wazuh-manager:$VERSION
@@ -87,9 +127,26 @@ jobs:
           docker push ${{ env.IMAGE_PREFIX }}/wazuh-dashboard:$VERSION
           docker push ${{ env.IMAGE_PREFIX }}/wazuh-dashboard:latest
 
+      - name: Commit version bump
+        if: github.event.inputs.bump_type != 'none'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add VERSION.json
+          git commit -m "chore: bump Wazuh version to ${{ steps.bump_version.outputs.version }}"
+          git tag -a "v${{ steps.bump_version.outputs.version }}" -m "Release v${{ steps.bump_version.outputs.version }}"
+
+      - name: Push changes
+        if: github.event.inputs.bump_type != 'none'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+          tags: true
+
       - name: Image summary
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ steps.bump_version.outputs.version }}"
           echo "## Built Images" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- \`${{ env.IMAGE_PREFIX }}/wazuh-manager:$VERSION\`" >> $GITHUB_STEP_SUMMARY
