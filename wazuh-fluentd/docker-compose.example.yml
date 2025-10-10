@@ -10,22 +10,12 @@ services:
     hostname: wazuh-fluentd
     restart: unless-stopped
 
-    # Expose all syslog ports
+    # Expose syslog ports
     ports:
+      - "514:514/udp" # Generic Syslog
       - "30514:30514/udp" # MikroTik RouterOS
-      - "30515:30515/tcp" # Fortigate CEF
-      - "30516:30516/udp" # Fortigate Syslog
-      - "30517:30517/udp" # Cisco ASA
-      - "30518:30518/tcp" # Palo Alto PAN-OS
-      - "30519:30519/udp" # Generic Syslog
-      - "30520:30520/tcp" # Generic Syslog
-      - "30521:30521/tcp" # Generic CEF
-      - "30522:30522/udp" # Generic CEF
-      - "30523:30523/udp" # Ruckus Wireless
-      - "30524:30524/tcp" # Ruckus Wireless
-      - "30525:30525/tcp" # Check Point CEF
-      - "30526:30526/udp" # Check Point Syslog
       - "30527:30527/udp" # VMware ESXi
+      - "2055:2055/udp" # NetFlow (disabled by default)
 
     environment:
       # Required: Wazuh Indexer connection
@@ -33,6 +23,10 @@ services:
       - INDEXER_PORT=9200
       - INDEXER_USERNAME=admin
       - INDEXER_PASSWORD=SecretPassword # Change this!
+
+      # Required: Wazuh Manager connection (for security rules)
+      - WAZUH_MANAGER_HOST=wazuh-manager
+      - WAZUH_MANAGER_PORT=1514
 
       # Optional: Pipeline setup
       - SETUP_PIPELINES=true # Auto-create pipelines on startup
