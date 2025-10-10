@@ -1,0 +1,170 @@
+{
+  "description": "Enrich Wazuh alerts for VMware ESXi logs with GeoIP and additional parsing",
+  "processors": [
+    {
+      "geoip": {
+        "description": "Add GeoIP data for source IP",
+        "field": "data.esxi.parsed.srcip",
+        "target_field": "source_geo",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "set": {
+        "description": "Set event category for authentication",
+        "field": "event.category",
+        "value": "authentication",
+        "if": "ctx.data?.esxi?.full_message?.contains('SSH') || ctx.data?.esxi?.full_message?.contains('login')"
+      }
+    },
+    {
+      "set": {
+        "description": "Set event category for VM operations",
+        "field": "event.category",
+        "value": "process",
+        "if": "ctx.data?.esxi?.full_message?.contains('virtual machine') || ctx.data?.esxi?.full_message?.contains('powered')"
+      }
+    },
+    {
+      "set": {
+        "description": "Set event category for account management",
+        "field": "event.category",
+        "value": "iam",
+        "if": "ctx.data?.esxi?.full_message?.contains('Account') || ctx.data?.esxi?.full_message?.contains('Password')"
+      }
+    },
+    {
+      "set": {
+        "description": "Set event category for file operations",
+        "field": "event.category",
+        "value": "file",
+        "if": "ctx.data?.esxi?.full_message?.contains('File') || ctx.data?.esxi?.full_message?.contains('Deletion')"
+      }
+    },
+    {
+      "set": {
+        "description": "Set event type for authentication",
+        "field": "event.type",
+        "value": "authentication",
+        "if": "ctx.data?.esxi?.full_message?.contains('login') || ctx.data?.esxi?.full_message?.contains('SSH')"
+      }
+    },
+    {
+      "set": {
+        "description": "Set event type for creation",
+        "field": "event.type",
+        "value": "creation",
+        "if": "ctx.data?.esxi?.full_message?.contains('Created') || ctx.data?.esxi?.full_message?.contains('was created')"
+      }
+    },
+    {
+      "set": {
+        "description": "Set event type for deletion",
+        "field": "event.type",
+        "value": "deletion",
+        "if": "ctx.data?.esxi?.full_message?.contains('Removed') || ctx.data?.esxi?.full_message?.contains('Deletion') || ctx.data?.esxi?.full_message?.contains('deleted')"
+      }
+    },
+    {
+      "set": {
+        "description": "Set event type for change",
+        "field": "event.type",
+        "value": "change",
+        "if": "ctx.data?.esxi?.full_message?.contains('Password was changed') || ctx.data?.esxi?.full_message?.contains('modified')"
+      }
+    },
+    {
+      "set": {
+        "description": "Add vendor ECS field",
+        "field": "observer.vendor",
+        "value": "VMware"
+      }
+    },
+    {
+      "set": {
+        "description": "Add product ECS field",
+        "field": "observer.product",
+        "value": "ESXi"
+      }
+    },
+    {
+      "set": {
+        "description": "Add observer hostname",
+        "field": "observer.hostname",
+        "value": "{{data.esxi.hostname}}",
+        "if": "ctx.data?.esxi?.hostname != null"
+      }
+    },
+    {
+      "set": {
+        "description": "Add ESXi host from parsed data",
+        "field": "host.name",
+        "value": "{{data.esxi.parsed.esxi_host}}",
+        "if": "ctx.data?.esxi?.parsed?.esxi_host != null"
+      }
+    },
+    {
+      "set": {
+        "description": "Add VM name",
+        "field": "vm.name",
+        "value": "{{data.esxi.parsed.vm}}",
+        "if": "ctx.data?.esxi?.parsed?.vm != null"
+      }
+    },
+    {
+      "script": {
+        "description": "Calculate risk score based on rule level",
+        "lang": "painless",
+        "source": "if (ctx.rule?.level != null) { int level = ctx.rule.level; if (level >= 12) { ctx.risk_score = 90; } else if (level >= 8) { ctx.risk_score = 70; } else if (level >= 5) { ctx.risk_score = 50; } else { ctx.risk_score = 20; } }",
+        "ignore_failure": true
+      }
+    },
+    {
+      "set": {
+        "description": "Mark as critical",
+        "field": "event.severity",
+        "value": "critical",
+        "if": "ctx.rule?.level != null && ctx.rule.level >= 12"
+      }
+    },
+    {
+      "set": {
+        "description": "Mark as high priority",
+        "field": "event.severity",
+        "value": "high",
+        "if": "ctx.rule?.level != null && ctx.rule.level >= 8 && ctx.rule.level < 12"
+      }
+    },
+    {
+      "set": {
+        "description": "Mark as medium priority",
+        "field": "event.severity",
+        "value": "medium",
+        "if": "ctx.rule?.level != null && ctx.rule.level >= 5 && ctx.rule.level < 8"
+      }
+    },
+    {
+      "set": {
+        "description": "Mark as low priority",
+        "field": "event.severity",
+        "value": "low",
+        "if": "ctx.rule?.level != null && ctx.rule.level < 5"
+      }
+    }
+  ],
+  "on_failure": [
+    {
+      "set": {
+        "field": "error.message",
+        "value": "Pipeline processing failed: {{ _ingest.on_failure_message }}"
+      }
+    },
+    {
+      "set": {
+        "field": "error.pipeline",
+        "value": "esxi-enrichment"
+      }
+    }
+  ]
+}

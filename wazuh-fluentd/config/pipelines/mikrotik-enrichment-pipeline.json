@@ -1,0 +1,123 @@
+{
+  "description": "Enrich Wazuh alerts for MikroTik logs with GeoIP and additional parsing",
+  "processors": [
+    {
+      "geoip": {
+        "description": "Add GeoIP data for source IP",
+        "field": "data.mikrotik.parsed.src_ip",
+        "target_field": "source_geo",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "geoip": {
+        "description": "Add GeoIP data for destination IP",
+        "field": "data.mikrotik.parsed.dst_ip",
+        "target_field": "destination_geo",
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "set": {
+        "description": "Set event category",
+        "field": "event.category",
+        "value": "network",
+        "if": "ctx.data?.mikrotik?.log_source == 'mikrotik'"
+      }
+    },
+    {
+      "set": {
+        "description": "Set event type for authentication",
+        "field": "event.type",
+        "value": "authentication",
+        "if": "ctx.data?.mikrotik?.full_message?.contains('login')"
+      }
+    },
+    {
+      "set": {
+        "description": "Set event type for configuration change",
+        "field": "event.type",
+        "value": "change",
+        "if": "ctx.data?.mikrotik?.full_message?.contains('rule') || ctx.data?.mikrotik?.full_message?.contains('user added') || ctx.data?.mikrotik?.full_message?.contains('user removed')"
+      }
+    },
+    {
+      "set": {
+        "description": "Add vendor ECS field",
+        "field": "observer.vendor",
+        "value": "MikroTik"
+      }
+    },
+    {
+      "set": {
+        "description": "Add product ECS field",
+        "field": "observer.product",
+        "value": "RouterOS"
+      }
+    },
+    {
+      "set": {
+        "description": "Add observer hostname",
+        "field": "observer.hostname",
+        "value": "{{data.mikrotik.hostname}}",
+        "if": "ctx.data?.mikrotik?.hostname != null"
+      }
+    },
+    {
+      "script": {
+        "description": "Calculate risk score based on rule level",
+        "lang": "painless",
+        "source": "if (ctx.rule?.level != null) { int level = ctx.rule.level; if (level >= 12) { ctx.risk_score = 90; } else if (level >= 8) { ctx.risk_score = 70; } else if (level >= 5) { ctx.risk_score = 50; } else { ctx.risk_score = 20; } }",
+        "ignore_failure": true
+      }
+    },
+    {
+      "set": {
+        "description": "Mark as high priority if critical rule",
+        "field": "event.severity",
+        "value": "critical",
+        "if": "ctx.rule?.level != null && ctx.rule.level >= 12"
+      }
+    },
+    {
+      "set": {
+        "description": "Mark as high priority",
+        "field": "event.severity",
+        "value": "high",
+        "if": "ctx.rule?.level != null && ctx.rule.level >= 8 && ctx.rule.level < 12"
+      }
+    },
+    {
+      "set": {
+        "description": "Mark as medium priority",
+        "field": "event.severity",
+        "value": "medium",
+        "if": "ctx.rule?.level != null && ctx.rule.level >= 5 && ctx.rule.level < 8"
+      }
+    },
+    {
+      "set": {
+        "description": "Mark as low priority",
+        "field": "event.severity",
+        "value": "low",
+        "if": "ctx.rule?.level != null && ctx.rule.level < 5"
+      }
+    }
+  ],
+  "on_failure": [
+    {
+      "set": {
+        "field": "error.message",
+        "value": "Pipeline processing failed: {{ _ingest.on_failure_message }}"
+      }
+    },
+    {
+      "set": {
+        "field": "error.pipeline",
+        "value": "mikrotik-enrichment"
+      }
+    }
+  ]
+}

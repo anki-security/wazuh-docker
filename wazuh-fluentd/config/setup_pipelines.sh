@@ -94,92 +94,20 @@ create_pipeline() {
 echo ""
 echo "Creating pipelines..."
 echo ""
-
 # Track success/failure
 TOTAL=0
 SUCCESS=0
 FAILED=0
 
-# Create all available pipelines
-if create_pipeline "mikrotik" "${PIPELINE_DIR}/mikrotik-pipeline.json"; then
+# Create enrichment pipelines
+if create_pipeline "mikrotik-enrichment" "${PIPELINE_DIR}/mikrotik-enrichment-pipeline.json"; then
     SUCCESS=$((SUCCESS + 1))
 else
     FAILED=$((FAILED + 1))
 fi
 TOTAL=$((TOTAL + 1))
 
-if create_pipeline "vmware-esxi" "${PIPELINE_DIR}/vmware-esxi-pipeline.json"; then
-    SUCCESS=$((SUCCESS + 1))
-else
-    FAILED=$((FAILED + 1))
-fi
-TOTAL=$((TOTAL + 1))
-
-if create_pipeline "fortigate-cef" "${PIPELINE_DIR}/fortigate-cef-pipeline.json"; then
-    SUCCESS=$((SUCCESS + 1))
-else
-    FAILED=$((FAILED + 1))
-fi
-TOTAL=$((TOTAL + 1))
-
-if create_pipeline "fortigate-syslog" "${PIPELINE_DIR}/fortigate-syslog-pipeline.json"; then
-    SUCCESS=$((SUCCESS + 1))
-else
-    FAILED=$((FAILED + 1))
-fi
-TOTAL=$((TOTAL + 1))
-
-if create_pipeline "cisco-asa" "${PIPELINE_DIR}/cisco-asa-pipeline.json"; then
-    SUCCESS=$((SUCCESS + 1))
-else
-    FAILED=$((FAILED + 1))
-fi
-TOTAL=$((TOTAL + 1))
-
-if create_pipeline "paloalto" "${PIPELINE_DIR}/paloalto-pipeline.json"; then
-    SUCCESS=$((SUCCESS + 1))
-else
-    FAILED=$((FAILED + 1))
-fi
-TOTAL=$((TOTAL + 1))
-
-if create_pipeline "generic-syslog" "${PIPELINE_DIR}/generic-syslog-pipeline.json"; then
-    SUCCESS=$((SUCCESS + 1))
-else
-    FAILED=$((FAILED + 1))
-fi
-TOTAL=$((TOTAL + 1))
-
-# Note: Add pipeline JSON files for these integrations if needed
-if create_pipeline "generic-cef" "${PIPELINE_DIR}/generic-cef-pipeline.json"; then
-    SUCCESS=$((SUCCESS + 1))
-else
-    FAILED=$((FAILED + 1))
-fi
-TOTAL=$((TOTAL + 1))
-
-if create_pipeline "ruckus" "${PIPELINE_DIR}/ruckus-pipeline.json"; then
-    SUCCESS=$((SUCCESS + 1))
-else
-    FAILED=$((FAILED + 1))
-fi
-TOTAL=$((TOTAL + 1))
-
-if create_pipeline "checkpoint" "${PIPELINE_DIR}/checkpoint-pipeline.json"; then
-    SUCCESS=$((SUCCESS + 1))
-else
-    FAILED=$((FAILED + 1))
-fi
-TOTAL=$((TOTAL + 1))
-
-if create_pipeline "netflow" "${PIPELINE_DIR}/netflow-pipeline.json"; then
-    SUCCESS=$((SUCCESS + 1))
-else
-    FAILED=$((FAILED + 1))
-fi
-TOTAL=$((TOTAL + 1))
-
-if create_pipeline "sflow" "${PIPELINE_DIR}/sflow-pipeline.json"; then
+if create_pipeline "esxi-enrichment" "${PIPELINE_DIR}/esxi-enrichment-pipeline.json"; then
     SUCCESS=$((SUCCESS + 1))
 else
     FAILED=$((FAILED + 1))
