@@ -39,8 +39,11 @@ jobs:
         id: current_version
         run: |
           CURRENT_VERSION=$(jq -r '.version' VERSION.json)
+          WAZUH_VERSION=$(jq -r '.wazuh_version' VERSION.json)
           echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-          echo "Current version: $CURRENT_VERSION"
+          echo "wazuh_version=$WAZUH_VERSION" >> $GITHUB_OUTPUT
+          echo "Current custom version: $CURRENT_VERSION"
+          echo "Wazuh upstream version: $WAZUH_VERSION"
           
       - name: Bump version
         id: bump_version
@@ -91,40 +94,44 @@ jobs:
 
       - name: Build Wazuh images
         run: |
-          VERSION="${{ steps.bump_version.outputs.version }}"
-          ./build-images.sh -v $VERSION
+          WAZUH_VERSION="${{ steps.current_version.outputs.wazuh_version }}"
+          echo "Building with Wazuh version: $WAZUH_VERSION"
+          ./build-images.sh -v $WAZUH_VERSION
 
       - name: Tag images for GHCR
         run: |
-          VERSION="${{ steps.bump_version.outputs.version }}"
+          WAZUH_VERSION="${{ steps.current_version.outputs.wazuh_version }}"
+          CUSTOM_VERSION="${{ steps.bump_version.outputs.version }}"
+          
+          echo "Tagging images: Wazuh $WAZUH_VERSION as custom version $CUSTOM_VERSION"
           
           # Tag wazuh-manager
-          docker tag wazuh/wazuh-manager:$VERSION ${{ env.IMAGE_PREFIX }}/wazuh-manager:$VERSION
-          docker tag wazuh/wazuh-manager:$VERSION ${{ env.IMAGE_PREFIX }}/wazuh-manager:latest
+          docker tag wazuh/wazuh-manager:$WAZUH_VERSION ${{ env.IMAGE_PREFIX }}/wazuh-manager:$CUSTOM_VERSION
+          docker tag wazuh/wazuh-manager:$WAZUH_VERSION ${{ env.IMAGE_PREFIX }}/wazuh-manager:latest
           
           # Tag wazuh-indexer
-          docker tag wazuh/wazuh-indexer:$VERSION ${{ env.IMAGE_PREFIX }}/wazuh-indexer:$VERSION
-          docker tag wazuh/wazuh-indexer:$VERSION ${{ env.IMAGE_PREFIX }}/wazuh-indexer:latest
+          docker tag wazuh/wazuh-indexer:$WAZUH_VERSION ${{ env.IMAGE_PREFIX }}/wazuh-indexer:$CUSTOM_VERSION
+          docker tag wazuh/wazuh-indexer:$WAZUH_VERSION ${{ env.IMAGE_PREFIX }}/wazuh-indexer:latest
           
           # Tag wazuh-dashboard
-          docker tag wazuh/wazuh-dashboard:$VERSION ${{ env.IMAGE_PREFIX }}/wazuh-dashboard:$VERSION
-          docker tag wazuh/wazuh-dashboard:$VERSION ${{ env.IMAGE_PREFIX }}/wazuh-dashboard:latest
+          docker tag wazuh/wazuh-dashboard:$WAZUH_VERSION ${{ env.IMAGE_PREFIX }}/wazuh-dashboard:$CUSTOM_VERSION
+          docker tag wazuh/wazuh-dashboard:$WAZUH_VERSION ${{ env.IMAGE_PREFIX }}/wazuh-dashboard:latest
 
       - name: Push images to GHCR
         if: github.event_name != 'pull_request' && (github.event_name != 'workflow_dispatch' || inputs.push_images)
         run: |
-          VERSION="${{ steps.bump_version.outputs.version }}"
+          CUSTOM_VERSION="${{ steps.bump_version.outputs.version }}"
           
           echo "Pushing wazuh-manager..."
-          docker push ${{ env.IMAGE_PREFIX }}/wazuh-manager:$VERSION
+          docker push ${{ env.IMAGE_PREFIX }}/wazuh-manager:$CUSTOM_VERSION
           docker push ${{ env.IMAGE_PREFIX }}/wazuh-manager:latest
           
           echo "Pushing wazuh-indexer..."
-          docker push ${{ env.IMAGE_PREFIX }}/wazuh-indexer:$VERSION
+          docker push ${{ env.IMAGE_PREFIX }}/wazuh-indexer:$CUSTOM_VERSION
           docker push ${{ env.IMAGE_PREFIX }}/wazuh-indexer:latest
           
           echo "Pushing wazuh-dashboard..."
-          docker push ${{ env.IMAGE_PREFIX }}/wazuh-dashboard:$VERSION
+          docker push ${{ env.IMAGE_PREFIX }}/wazuh-dashboard:$CUSTOM_VERSION
           docker push ${{ env.IMAGE_PREFIX }}/wazuh-dashboard:latest
 
       - name: Commit version bump
@@ -146,11 +153,15 @@ jobs:
 
       - name: Image summary
         run: |
-          VERSION="${{ steps.bump_version.outputs.version }}"
+          WAZUH_VERSION="${{ steps.current_version.outputs.wazuh_version }}"
+          CUSTOM_VERSION="${{ steps.bump_version.outputs.version }}"
           echo "## Built Images" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ env.IMAGE_PREFIX }}/wazuh-manager:$VERSION\`" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ env.IMAGE_PREFIX }}/wazuh-indexer:$VERSION\`" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ env.IMAGE_PREFIX }}/wazuh-dashboard:$VERSION\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Wazuh Version:** $WAZUH_VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "**Custom Version:** $CUSTOM_VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- \`${{ env.IMAGE_PREFIX }}/wazuh-manager:$CUSTOM_VERSION\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`${{ env.IMAGE_PREFIX }}/wazuh-indexer:$CUSTOM_VERSION\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`${{ env.IMAGE_PREFIX }}/wazuh-dashboard:$CUSTOM_VERSION\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "All images are also tagged as \`:latest\`" >> $GITHUB_STEP_SUMMARY
