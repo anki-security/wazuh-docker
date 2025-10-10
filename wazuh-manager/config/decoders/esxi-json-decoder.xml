@@ -1,0 +1,45 @@
+<!--
+  VMware ESXi JSON Decoder for Fluentd-parsed logs
+  
+  Location: /var/ossec/etc/decoders/esxi-json-decoder.xml
+  
+  Fluentd sends structured JSON with pre-parsed fields from ESXi syslog.
+  The JSON decoder automatically extracts all fields as dynamic fields.
+  
+  Example JSON from Fluentd:
+  {
+    "log_source": "vmware-esxi",
+    "vendor": "vmware",
+    "product": "esxi",
+    "hostname": "192.168.1.10",
+    "timestamp": "2025-10-10T18:55:00.000Z",
+    "full_message": "SSH login has failed for 'root@10.0.0.50'",
+    "parsed": {
+      "esxi_host": "esxi-host01",
+      "process_name": "Hostd",
+      "process_id": "12345",
+      "event_id": "1001",
+      "user": "root",
+      "srcip": "10.0.0.50"
+    }
+  }
+  
+  All fields are automatically available as dynamic fields:
+  - esxi.log_source
+  - esxi.vendor
+  - esxi.hostname
+  - esxi.full_message
+  - esxi.parsed.user
+  - esxi.parsed.srcip
+  - esxi.parsed.vm
+  - etc.
+-->
+
+<decoder name="esxi-json">
+  <prematch>^{.*"log_source"\s*:\s*"vmware-esxi"</prematch>
+</decoder>
+
+<decoder name="esxi-json-child">
+  <parent>esxi-json</parent>
+  <plugin_decoder>JSON_Decoder</plugin_decoder>
+</decoder>

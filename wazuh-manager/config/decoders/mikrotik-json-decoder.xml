@@ -1,0 +1,43 @@
+<!--
+  MikroTik JSON Decoder for Fluentd-parsed logs
+  
+  Location: /var/ossec/etc/decoders/mikrotik-json-decoder.xml
+  
+  Fluentd sends structured JSON with pre-parsed fields.
+  The JSON decoder automatically extracts all fields as dynamic fields.
+  
+  Example JSON from Fluentd:
+  {
+    "log_source": "mikrotik",
+    "vendor": "mikrotik",
+    "product": "routeros",
+    "hostname": "192.168.1.1",
+    "timestamp": "2025-10-10T18:55:00.000Z",
+    "full_message": "login failure for user admin from 192.168.1.100 via ssh",
+    "event_type": "system",
+    "severity": "error",
+    "parsed": {
+      "user": "admin",
+      "src_ip": "192.168.1.100",
+      "protocol": "ssh"
+    }
+  }
+  
+  All fields are automatically available as dynamic fields:
+  - mikrotik.log_source
+  - mikrotik.vendor
+  - mikrotik.hostname
+  - mikrotik.full_message
+  - mikrotik.parsed.user
+  - mikrotik.parsed.src_ip
+  - etc.
+-->
+
+<decoder name="mikrotik-json">
+  <prematch>^{.*"log_source"\s*:\s*"mikrotik"</prematch>
+</decoder>
+
+<decoder name="mikrotik-json-child">
+  <parent>mikrotik-json</parent>
+  <plugin_decoder>JSON_Decoder</plugin_decoder>
+</decoder>

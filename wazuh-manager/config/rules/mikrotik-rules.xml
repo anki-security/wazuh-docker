@@ -1,0 +1,187 @@
+<!--
+  MikroTik RouterOS Rules for JSON-decoded logs from Fluentd
+  
+  These rules work with the mikrotik-json decoder
+-->
+
+<group name="mikrotik,syslog,authentication,">
+
+  <!-- Base rule for all MikroTik logs -->
+  <rule id="100001" level="0">
+    <decoded_as>mikrotik-json</decoded_as>
+    <description>MikroTik RouterOS log.</description>
+  </rule>
+
+  <!-- Authentication Events -->
+  
+  <rule id="100010" level="3">
+    <if_sid>100001</if_sid>
+    <field name="mikrotik.full_message">logged in</field>
+    <description>MikroTik: User $(mikrotik.parsed.user) logged in from $(mikrotik.parsed.src_ip) via $(mikrotik.parsed.protocol)</description>
+    <mitre>
+      <id>T1078</id>
+    </mitre>
+  </rule>
+
+  <rule id="100011" level="5">
+    <if_sid>100001</if_sid>
+    <field name="mikrotik.full_message">login failure</field>
+    <description>MikroTik: Login failure for user $(mikrotik.parsed.user) from $(mikrotik.parsed.src_ip) via $(mikrotik.parsed.protocol)</description>
+    <mitre>
+      <id>T1110</id>
+    </mitre>
+  </rule>
+
+  <rule id="100012" level="10" frequency="5" timeframe="120">
+    <if_matched_sid>100011</if_matched_sid>
+    <same_source_ip />
+    <description>MikroTik: Multiple login failures from $(srcip)</description>
+    <mitre>
+      <id>T1110</id>
+    </mitre>
+  </rule>
+
+  <rule id="100013" level="12" frequency="10" timeframe="300">
+    <if_matched_sid>100011</if_matched_sid>
+    <description>MikroTik: Brute force attack detected - $(frequency_value) failed attempts</description>
+    <mitre>
+      <id>T1110.001</id>
+    </mitre>
+  </rule>
+
+  <rule id="100014" level="3">
+    <if_sid>100001</if_sid>
+    <field name="full_message">logged out</field>
+    <description>MikroTik: User $(user) logged out</description>
+  </rule>
+
+  <!-- User Management -->
+  
+  <rule id="100020" level="8">
+    <if_sid>100001</if_sid>
+    <field name="full_message">user added</field>
+    <description>MikroTik: User account added - $(user)</description>
+    <mitre>
+      <id>T1136</id>
+    </mitre>
+  </rule>
+
+  <rule id="100021" level="8">
+    <if_sid>100001</if_sid>
+    <field name="full_message">user removed</field>
+    <description>MikroTik: User account removed - $(user)</description>
+    <mitre>
+      <id>T1531</id>
+    </mitre>
+  </rule>
+
+  <rule id="100022" level="7">
+    <if_sid>100001</if_sid>
+    <field name="full_message">user changed</field>
+    <description>MikroTik: User account modified - $(user)</description>
+    <mitre>
+      <id>T1098</id>
+    </mitre>
+  </rule>
+
+  <rule id="100023" level="7">
+    <if_sid>100001</if_sid>
+    <field name="full_message">password changed</field>
+    <description>MikroTik: Password changed for user $(user)</description>
+    <mitre>
+      <id>T1098</id>
+    </mitre>
+  </rule>
+
+  <!-- Firewall Rules -->
+  
+  <rule id="100030" level="8">
+    <if_sid>100001</if_sid>
+    <field name="full_message">filter rule</field>
+    <description>MikroTik: Firewall filter rule modified by $(user) from $(srcip)</description>
+    <mitre>
+      <id>T1562.004</id>
+    </mitre>
+  </rule>
+
+  <rule id="100031" level="8">
+    <if_sid>100001</if_sid>
+    <field name="full_message">raw rule</field>
+    <description>MikroTik: Firewall raw rule modified by $(user) from $(srcip)</description>
+    <mitre>
+      <id>T1562.004</id>
+    </mitre>
+  </rule>
+
+  <rule id="100032" level="10" frequency="3" timeframe="60">
+    <if_matched_sid>100030</if_matched_sid>
+    <same_user />
+    <description>MikroTik: Multiple firewall rule changes by $(user)</description>
+    <mitre>
+      <id>T1562.004</id>
+    </mitre>
+  </rule>
+
+  <!-- VPN Events -->
+  
+  <rule id="100040" level="3">
+    <if_sid>100001</if_sid>
+    <field name="full_message">wireguard</field>
+    <description>MikroTik: WireGuard VPN activity - $(user) from $(srcip)</description>
+  </rule>
+
+  <rule id="100041" level="3">
+    <if_sid>100001</if_sid>
+    <field name="full_message">ovpn</field>
+    <description>MikroTik: OpenVPN activity from $(srcip)</description>
+  </rule>
+
+  <rule id="100042" level="3">
+    <if_sid>100001</if_sid>
+    <field name="full_message">l2tp</field>
+    <description>MikroTik: L2TP VPN activity from $(srcip)</description>
+  </rule>
+
+  <rule id="100043" level="3">
+    <if_sid>100001</if_sid>
+    <field name="full_message">ipsec</field>
+    <description>MikroTik: IPsec VPN activity from $(srcip)</description>
+  </rule>
+
+  <!-- Network Events -->
+  
+  <rule id="100050" level="2">
+    <if_sid>100001</if_sid>
+    <field name="full_message">link up</field>
+    <description>MikroTik: Network interface link up</description>
+  </rule>
+
+  <rule id="100051" level="4">
+    <if_sid>100001</if_sid>
+    <field name="full_message">link down</field>
+    <description>MikroTik: Network interface link down</description>
+  </rule>
+
+  <rule id="100052" level="5" frequency="10" timeframe="60">
+    <if_matched_sid>100051</if_matched_sid>
+    <description>MikroTik: Multiple interface link down events</description>
+  </rule>
+
+  <!-- DHCP Events -->
+  
+  <rule id="100060" level="3">
+    <if_sid>100001</if_sid>
+    <field name="full_message">dhcp alert</field>
+    <description>MikroTik: Rogue DHCP server detected - $(srcip)</description>
+    <mitre>
+      <id>T1557.002</id>
+    </mitre>
+  </rule>
+
+  <rule id="100061" level="2">
+    <if_sid>100001</if_sid>
+    <field name="full_message">assigned</field>
+    <description>MikroTik: DHCP address assigned to $(srcip)</description>
+  </rule>
+
+</group>
