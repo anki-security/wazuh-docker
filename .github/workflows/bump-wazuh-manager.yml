@@ -93,6 +93,66 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
           tags: true
+      
+      - name: Package configs
+        run: |
+          cd wazuh-manager
+          NEW_VERSION="${{ steps.bump_version.outputs.new_version }}"
+          
+          # Create release package
+          mkdir -p release
+          
+          # Copy configs
+          cp -r config/decoders release/
+          cp -r config/rules release/
+          cp config/filebeat-config.yml release/
+          cp test-rules.sh release/
+          cp -r test-logs release/
+          cp README-TESTING.md release/
+          cp VERSION release/
+          cp CHANGELOG.md release/
+          
+          # Create README for the package
+          cat > release/README.md << 'EOF'
+          # Wazuh Manager Configurations
+          
+          Version: $NEW_VERSION
+          
+          ## Contents
+          
+          - `decoders/` - JSON decoders for MikroTik and ESXi
+          - `rules/` - Security rules with MITRE ATT&CK mappings
+          - `filebeat-config.yml` - Filebeat configuration for sensor filtering
+          - `test-rules.sh` - Local testing script
+          - `test-logs/` - Sample logs for testing
+          - `README-TESTING.md` - Testing guide
+          
+          ## Quick Deploy
+          
+          ```bash
+          # Deploy decoders
+          docker cp decoders/*.xml wazuh-manager:/var/ossec/etc/decoders/
+          
+          # Deploy rules
+          docker cp rules/*.xml wazuh-manager:/var/ossec/etc/rules/
+          
+          # Restart Wazuh Manager
+          docker exec wazuh-manager /var/ossec/bin/wazuh-control restart
+          ```
+          
+          ## Testing
+          
+          ```bash
+          ./test-rules.sh validate
+          ./test-rules.sh quick
+          ```
+          EOF
+          
+          # Create tarball
+          tar -czf wazuh-manager-configs-v${NEW_VERSION}.tar.gz -C release .
+          
+          # Create checksums
+          sha256sum wazuh-manager-configs-v${NEW_VERSION}.tar.gz > wazuh-manager-configs-v${NEW_VERSION}.tar.gz.sha256
           
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -149,8 +209,26 @@ jobs:
             ./test-rules.sh quick
             ```
             
+            ### Download
+            
+            **Configuration Package:**
+            - `wazuh-manager-configs-v${{ steps.bump_version.outputs.new_version }}.tar.gz` - All configs, decoders, rules, and testing tools
+            - `wazuh-manager-configs-v${{ steps.bump_version.outputs.new_version }}.tar.gz.sha256` - Checksum for verification
+            
+            ```bash
+            # Download and extract
+            wget https://github.com/${{ github.repository }}/releases/download/wazuh-manager-v${{ steps.bump_version.outputs.new_version }}/wazuh-manager-configs-v${{ steps.bump_version.outputs.new_version }}.tar.gz
+            tar -xzf wazuh-manager-configs-v${{ steps.bump_version.outputs.new_version }}.tar.gz
+            
+            # Verify checksum
+            sha256sum -c wazuh-manager-configs-v${{ steps.bump_version.outputs.new_version }}.tar.gz.sha256
+            ```
+            
             ### Changes
             See [wazuh-manager/CHANGELOG.md](wazuh-manager/CHANGELOG.md) for details.
+          files: |
+            wazuh-manager/wazuh-manager-configs-v${{ steps.bump_version.outputs.new_version }}.tar.gz
+            wazuh-manager/wazuh-manager-configs-v${{ steps.bump_version.outputs.new_version }}.tar.gz.sha256
           draft: false
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
