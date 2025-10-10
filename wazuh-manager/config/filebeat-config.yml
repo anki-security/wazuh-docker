@@ -21,6 +21,8 @@ filebeat.modules:
                     data.log_source: "mikrotik"
                 - contains:
                     data.log_source: "vmware-esxi"
+                - contains:
+                    data.log_source: "netflow"
 
 # No additional inputs - only process Wazuh Manager logs
 filebeat.inputs: []

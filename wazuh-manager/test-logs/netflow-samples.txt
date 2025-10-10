@@ -1,0 +1,32 @@
+# NetFlow Test Samples
+# These are JSON-formatted NetFlow records as they would be sent by Fluentd
+
+# Normal HTTP traffic
+{"log_source":"netflow","vendor":"multi","product":"netflow","data_source":"sensor","timestamp":"2025-10-10T20:00:00.000Z","src_ip":"192.168.1.100","dst_ip":"8.8.8.8","src_port":54321,"dst_port":80,"protocol":"TCP","bytes":5000,"packets":10,"flow_start":"2025-10-10T19:59:50.000Z","flow_end":"2025-10-10T20:00:00.000Z","exporter_ip":"192.168.1.1"}
+
+# High volume traffic (potential data exfiltration)
+{"log_source":"netflow","vendor":"multi","product":"netflow","data_source":"sensor","timestamp":"2025-10-10T20:05:00.000Z","src_ip":"192.168.1.50","dst_ip":"203.0.113.10","src_port":45678,"dst_port":443,"protocol":"TCP","bytes":1500000000,"packets":1000000,"flow_start":"2025-10-10T19:00:00.000Z","flow_end":"2025-10-10T20:05:00.000Z","exporter_ip":"192.168.1.1"}
+
+# SSH with high volume (data exfiltration)
+{"log_source":"netflow","vendor":"multi","product":"netflow","data_source":"sensor","timestamp":"2025-10-10T20:10:00.000Z","src_ip":"192.168.1.75","dst_ip":"198.51.100.50","src_port":52341,"dst_port":22,"protocol":"TCP","bytes":500000000,"packets":350000,"flow_start":"2025-10-10T19:30:00.000Z","flow_end":"2025-10-10T20:10:00.000Z","exporter_ip":"192.168.1.1"}
+
+# DNS tunneling (high volume DNS)
+{"log_source":"netflow","vendor":"multi","product":"netflow","data_source":"sensor","timestamp":"2025-10-10T20:15:00.000Z","src_ip":"192.168.1.120","dst_ip":"1.1.1.1","src_port":54123,"dst_port":53,"protocol":"UDP","bytes":5000000,"packets":50000,"flow_start":"2025-10-10T20:00:00.000Z","flow_end":"2025-10-10T20:15:00.000Z","exporter_ip":"192.168.1.1"}
+
+# Traffic to suspicious port
+{"log_source":"netflow","vendor":"multi","product":"netflow","data_source":"sensor","timestamp":"2025-10-10T20:20:00.000Z","src_ip":"192.168.1.200","dst_ip":"203.0.113.100","src_port":49876,"dst_port":4444,"protocol":"TCP","bytes":10000,"packets":50,"flow_start":"2025-10-10T20:19:50.000Z","flow_end":"2025-10-10T20:20:00.000Z","exporter_ip":"192.168.1.1"}
+
+# Backdoor port (31337)
+{"log_source":"netflow","vendor":"multi","product":"netflow","data_source":"sensor","timestamp":"2025-10-10T20:25:00.000Z","src_ip":"192.168.1.150","dst_ip":"198.51.100.200","src_port":55123,"dst_port":31337,"protocol":"TCP","bytes":50000,"packets":100,"flow_start":"2025-10-10T20:24:50.000Z","flow_end":"2025-10-10T20:25:00.000Z","exporter_ip":"192.168.1.1"}
+
+# Cryptocurrency mining
+{"log_source":"netflow","vendor":"multi","product":"netflow","data_source":"sensor","timestamp":"2025-10-10T20:30:00.000Z","src_ip":"192.168.1.180","dst_ip":"203.0.113.50","src_port":51234,"dst_port":3333,"protocol":"TCP","bytes":1000000,"packets":5000,"flow_start":"2025-10-10T20:00:00.000Z","flow_end":"2025-10-10T20:30:00.000Z","exporter_ip":"192.168.1.1"}
+
+# Tor traffic
+{"log_source":"netflow","vendor":"multi","product":"netflow","data_source":"sensor","timestamp":"2025-10-10T20:35:00.000Z","src_ip":"192.168.1.90","dst_ip":"198.51.100.75","src_port":54987,"dst_port":9001,"protocol":"TCP","bytes":250000,"packets":1500,"flow_start":"2025-10-10T20:30:00.000Z","flow_end":"2025-10-10T20:35:00.000Z","exporter_ip":"192.168.1.1"}
+
+# SMB lateral movement
+{"log_source":"netflow","vendor":"multi","product":"netflow","data_source":"sensor","timestamp":"2025-10-10T20:40:00.000Z","src_ip":"192.168.1.100","dst_ip":"192.168.1.50","src_port":49152,"dst_port":445,"protocol":"TCP","bytes":50000,"packets":200,"flow_start":"2025-10-10T20:39:55.000Z","flow_end":"2025-10-10T20:40:00.000Z","exporter_ip":"192.168.1.1"}
+
+# RDP lateral movement
+{"log_source":"netflow","vendor":"multi","product":"netflow","data_source":"sensor","timestamp":"2025-10-10T20:45:00.000Z","src_ip":"192.168.1.100","dst_ip":"192.168.1.75","src_port":49876,"dst_port":3389,"protocol":"TCP","bytes":100000,"packets":500,"flow_start":"2025-10-10T20:44:50.000Z","flow_end":"2025-10-10T20:45:00.000Z","exporter_ip":"192.168.1.1"}

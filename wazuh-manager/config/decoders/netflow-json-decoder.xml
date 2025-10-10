@@ -1,0 +1,36 @@
+<!--
+  NetFlow JSON Decoder
+  
+  Decodes NetFlow data forwarded from Fluentd in JSON format.
+  Supports NetFlow v5, v9, and v10 (IPFIX).
+  
+  Usage:
+    1. Copy to: /var/ossec/etc/decoders/netflow-json-decoder.xml
+    2. Restart Wazuh Manager: /var/ossec/bin/wazuh-control restart
+-->
+
+<decoder name="netflow-json">
+  <plugin_decoder>JSON_Decoder</plugin_decoder>
+</decoder>
+
+<!--
+  This decoder uses the JSON_Decoder plugin which automatically extracts
+  all fields from JSON logs sent by Fluentd.
+  
+  Common NetFlow fields extracted:
+  - src_ip, dst_ip: Source and destination IP addresses
+  - src_port, dst_port: Source and destination ports
+  - protocol: IP protocol (TCP, UDP, ICMP, etc.)
+  - bytes, packets: Traffic volume
+  - flow_start, flow_end: Flow timestamps
+  - exporter_ip: NetFlow exporter device IP
+  - log_source: "netflow"
+  - data_source: "sensor"
+  
+  All fields are available for use in rules as:
+  - $(src_ip), $(dst_ip)
+  - $(src_port), $(dst_port)
+  - $(protocol)
+  - $(bytes), $(packets)
+  - etc.
+-->

@@ -12,10 +12,12 @@ services:
 
     # Expose syslog ports
     ports:
-      - "514:514/udp" # Generic Syslog
-      - "30514:30514/udp" # MikroTik RouterOS
-      - "30527:30527/udp" # VMware ESXi
-      - "2055:2055/udp" # NetFlow (disabled by default)
+      # Syslog receivers
+      - "514:514/udp"        # Generic syslog
+      - "30514:30514/udp"    # MikroTik
+      - "30527:30527/udp"    # VMware ESXi
+      # NetFlow receiver
+      - "2055:2055/udp"      # NetFlow v5/v9/v10 (IPFIX)
 
     environment:
       # Required: Wazuh Indexer connection
