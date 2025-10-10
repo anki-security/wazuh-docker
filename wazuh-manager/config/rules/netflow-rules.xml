@@ -60,7 +60,29 @@
 
   <!-- Suspicious Protocols -->
   
-  <rule id="100230" level="6">
+  <rule id="100230" level="8">
+    <if_sid>100200</if_sid>
+    <field name="dst_port">22</field>
+    <field name="dst_ip" type="pcre2" negate="yes">^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.)</field>
+    <description>NetFlow: Outbound SSH connection to external host $(dst_ip):22 from $(src_ip)</description>
+    <group>external_connection,ssh,</group>
+    <mitre>
+      <id>T1048.002</id>
+    </mitre>
+  </rule>
+
+  <rule id="100231" level="8">
+    <if_sid>100200</if_sid>
+    <field name="dst_port">21</field>
+    <field name="dst_ip" type="pcre2" negate="yes">^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.)</field>
+    <description>NetFlow: Outbound FTP connection to external host $(dst_ip):21 from $(src_ip)</description>
+    <group>external_connection,ftp,</group>
+    <mitre>
+      <id>T1048.002</id>
+    </mitre>
+  </rule>
+
+  <rule id="100232" level="6">
     <if_sid>100200</if_sid>
     <field name="dst_port">22</field>
     <field name="bytes" type="pcre2">\d{8,}</field>
@@ -71,7 +93,7 @@
     </mitre>
   </rule>
 
-  <rule id="100231" level="6">
+  <rule id="100233" level="6">
     <if_sid>100200</if_sid>
     <field name="dst_port">443</field>
     <field name="bytes" type="pcre2">\d{9,}</field>
@@ -82,7 +104,7 @@
     </mitre>
   </rule>
 
-  <rule id="100232" level="5">
+  <rule id="100234" level="5">
     <if_sid>100200</if_sid>
     <field name="dst_port">53</field>
     <field name="bytes" type="pcre2">\d{6,}</field>

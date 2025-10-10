@@ -4,6 +4,15 @@
 # Normal HTTP traffic
 {"log_source":"netflow","vendor":"multi","product":"netflow","data_source":"sensor","timestamp":"2025-10-10T20:00:00.000Z","src_ip":"192.168.1.100","dst_ip":"8.8.8.8","src_port":54321,"dst_port":80,"protocol":"TCP","bytes":5000,"packets":10,"flow_start":"2025-10-10T19:59:50.000Z","flow_end":"2025-10-10T20:00:00.000Z","exporter_ip":"192.168.1.1"}
 
+# Outbound SSH to external host (HIGH ALERT)
+{"log_source":"netflow","vendor":"multi","product":"netflow","data_source":"sensor","timestamp":"2025-10-10T20:02:00.000Z","src_ip":"192.168.1.100","dst_ip":"203.0.113.50","src_port":54322,"dst_port":22,"protocol":"TCP","bytes":50000,"packets":100,"flow_start":"2025-10-10T20:01:50.000Z","flow_end":"2025-10-10T20:02:00.000Z","exporter_ip":"192.168.1.1"}
+
+# Outbound FTP to external host (HIGH ALERT)
+{"log_source":"netflow","vendor":"multi","product":"netflow","data_source":"sensor","timestamp":"2025-10-10T20:03:00.000Z","src_ip":"192.168.1.150","dst_ip":"198.51.100.75","src_port":54323,"dst_port":21,"protocol":"TCP","bytes":25000,"packets":50,"flow_start":"2025-10-10T20:02:50.000Z","flow_end":"2025-10-10T20:03:00.000Z","exporter_ip":"192.168.1.1"}
+
+# Internal SSH (should NOT trigger external connection alert)
+{"log_source":"netflow","vendor":"multi","product":"netflow","data_source":"sensor","timestamp":"2025-10-10T20:04:00.000Z","src_ip":"192.168.1.100","dst_ip":"192.168.1.50","src_port":54324,"dst_port":22,"protocol":"TCP","bytes":10000,"packets":20,"flow_start":"2025-10-10T20:03:50.000Z","flow_end":"2025-10-10T20:04:00.000Z","exporter_ip":"192.168.1.1"}
+
 # High volume traffic (potential data exfiltration)
 {"log_source":"netflow","vendor":"multi","product":"netflow","data_source":"sensor","timestamp":"2025-10-10T20:05:00.000Z","src_ip":"192.168.1.50","dst_ip":"203.0.113.10","src_port":45678,"dst_port":443,"protocol":"TCP","bytes":1500000000,"packets":1000000,"flow_start":"2025-10-10T19:00:00.000Z","flow_end":"2025-10-10T20:05:00.000Z","exporter_ip":"192.168.1.1"}
 
