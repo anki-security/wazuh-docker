@@ -55,42 +55,102 @@
     <description>MikroTik: User $(user) logged out</description>
   </rule>
 
-  <!-- User Management -->
+  <!-- User Management - CRITICAL EVENTS -->
   
-  <rule id="100020" level="8">
+  <rule id="100020" level="10">
     <if_sid>100001</if_sid>
-    <field name="full_message">user added</field>
-    <description>MikroTik: User account added - $(user)</description>
+    <field name="full_message" type="pcre2">user \S+ added by</field>
+    <description>MikroTik: CRITICAL - New user account created</description>
+    <group>user_management,account_creation,</group>
     <mitre>
-      <id>T1136</id>
+      <id>T1136.001</id>
     </mitre>
   </rule>
 
-  <rule id="100021" level="8">
+  <rule id="100021" level="12">
+    <if_sid>100020</if_sid>
+    <field name="full_message">group=full</field>
+    <description>MikroTik: CRITICAL - Admin user created with FULL privileges</description>
+    <group>user_management,privilege_escalation,</group>
+    <mitre>
+      <id>T1136.001</id>
+      <id>T1078.003</id>
+    </mitre>
+  </rule>
+
+  <rule id="100022" level="10">
     <if_sid>100001</if_sid>
-    <field name="full_message">user removed</field>
-    <description>MikroTik: User account removed - $(user)</description>
+    <field name="full_message" type="pcre2">user \S+ removed by</field>
+    <description>MikroTik: CRITICAL - User account deleted</description>
+    <group>user_management,account_deletion,</group>
     <mitre>
       <id>T1531</id>
     </mitre>
   </rule>
 
-  <rule id="100022" level="7">
+  <rule id="100023" level="9">
     <if_sid>100001</if_sid>
-    <field name="full_message">user changed</field>
-    <description>MikroTik: User account modified - $(user)</description>
+    <field name="full_message" type="pcre2">user \S+ changed by</field>
+    <description>MikroTik: CRITICAL - User account modified</description>
+    <group>user_management,account_modification,</group>
     <mitre>
       <id>T1098</id>
     </mitre>
   </rule>
 
-  <rule id="100023" level="7">
-    <if_sid>100001</if_sid>
-    <field name="full_message">password changed</field>
-    <description>MikroTik: Password changed for user $(user)</description>
+  <rule id="100024" level="11">
+    <if_sid>100023</if_sid>
+    <field name="full_message">disabled=yes</field>
+    <description>MikroTik: CRITICAL - User account DISABLED</description>
+    <group>user_management,account_disabled,</group>
+    <mitre>
+      <id>T1531</id>
+    </mitre>
+  </rule>
+
+  <rule id="100025" level="10">
+    <if_sid>100023</if_sid>
+    <field name="full_message">disabled=no</field>
+    <description>MikroTik: CRITICAL - User account ENABLED</description>
+    <group>user_management,account_enabled,</group>
     <mitre>
       <id>T1098</id>
     </mitre>
+  </rule>
+
+  <rule id="100026" level="11">
+    <if_sid>100023</if_sid>
+    <field name="full_message">group=full</field>
+    <description>MikroTik: CRITICAL - User promoted to FULL admin privileges</description>
+    <group>user_management,privilege_escalation,</group>
+    <mitre>
+      <id>T1078.003</id>
+      <id>T1098</id>
+    </mitre>
+  </rule>
+
+  <rule id="100027" level="9">
+    <if_sid>100001</if_sid>
+    <field name="full_message">password changed</field>
+    <description>MikroTik: CRITICAL - Password changed for user</description>
+    <group>user_management,password_change,</group>
+    <mitre>
+      <id>T1098</id>
+    </mitre>
+  </rule>
+
+  <rule id="100028" level="8">
+    <if_sid>100023</if_sid>
+    <field name="full_message">group=read</field>
+    <description>MikroTik: User privileges changed to READ-ONLY</description>
+    <group>user_management,privilege_reduction,</group>
+  </rule>
+
+  <rule id="100029" level="8">
+    <if_sid>100023</if_sid>
+    <field name="full_message">group=write</field>
+    <description>MikroTik: User privileges changed to WRITE</description>
+    <group>user_management,privilege_change,</group>
   </rule>
 
   <!-- Firewall Rules -->

@@ -6,3 +6,15 @@
 {"log_source":"mikrotik","vendor":"mikrotik","product":"routeros","hostname":"192.168.1.1","timestamp":"2025-10-10T19:05:00.000Z","full_message":"password changed for user testuser","parsed":{"user":"testuser"}}
 {"log_source":"mikrotik","vendor":"mikrotik","product":"routeros","hostname":"192.168.1.1","timestamp":"2025-10-10T19:06:00.000Z","full_message":"wireguard connection from 10.0.0.50","parsed":{"src_ip":"10.0.0.50"}}
 {"log_source":"mikrotik","vendor":"mikrotik","product":"routeros","hostname":"192.168.1.1","timestamp":"2025-10-10T19:07:00.000Z","full_message":"dhcp alert on bridge: discovered unknown dhcp server, mac 00:11:22:33:44:55, ip 192.168.1.200","parsed":{"src_ip":"192.168.1.200"}}
+
+{"log_source":"mikrotik","vendor":"mikrotik","product":"routeros","data_source":"anki-sensor","hostname":"MikroTik","@timestamp":"2025-10-11T00:24:36.000Z","full_message":"user test111 changed by mac-msg(winbox):admin@12:78:A4:FC:65:B6 (/user set test111 address=\"\" disabled=yes group=read inactivity-policy=none inactivity-timeout=10m name=test111)","message":"user test111 changed by mac-msg(winbox):admin@12:78:A4:FC:65:B6"}
+
+{"log_source":"mikrotik","vendor":"mikrotik","product":"routeros","data_source":"anki-sensor","hostname":"MikroTik","@timestamp":"2025-10-11T00:34:53.000Z","full_message":"user newAdmin added by mac-msg(winbox):admin@12:78:A4:FC:65:B6 (*3 = /user add address=\"\" disabled=no group=full inactivity-policy=none inactivity-timeout=10m name=newAdmin)","message":"user newAdmin added by mac-msg(winbox):admin@12:78:A4:FC:65:B6"}
+
+{"log_source":"mikrotik","vendor":"mikrotik","product":"routeros","data_source":"anki-sensor","hostname":"MikroTik","@timestamp":"2025-10-11T00:35:00.000Z","full_message":"user test111 changed by mac-msg(winbox):admin@12:78:A4:FC:65:B6 (/user set test111 disabled=no)","message":"user test111 changed by mac-msg(winbox):admin@12:78:A4:FC:65:B6"}
+
+{"log_source":"mikrotik","vendor":"mikrotik","product":"routeros","data_source":"anki-sensor","hostname":"MikroTik","@timestamp":"2025-10-11T00:36:00.000Z","full_message":"user operator changed by mac-msg(winbox):admin@12:78:A4:FC:65:B6 (/user set operator group=full)","message":"user operator changed by mac-msg(winbox):admin@12:78:A4:FC:65:B6"}
+
+{"log_source":"mikrotik","vendor":"mikrotik","product":"routeros","data_source":"anki-sensor","hostname":"MikroTik","@timestamp":"2025-10-11T00:37:00.000Z","full_message":"user olduser removed by mac-msg(winbox):admin@12:78:A4:FC:65:B6","message":"user olduser removed by mac-msg(winbox):admin@12:78:A4:FC:65:B6"
+
+{"log_source":"mikrotik","vendor":"mikrotik","product":"routeros","data_source":"anki-sensor","hostname":"MikroTik","@timestamp":"2025-10-11T00:38:00.000Z","full_message":"user operator changed by mac-msg(winbox):admin@12:78:A4:FC:65:B6 (/user set operator group=read)","message":"user operator changed by mac-msg(winbox):admin@12:78:A4:FC:65:B6"}
