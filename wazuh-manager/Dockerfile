@@ -35,6 +35,10 @@ RUN yum install wazuh-manager-${WAZUH_VERSION}-${WAZUH_TAG_REVISION} -y && \
 COPY config/etc/ /etc/
 COPY --chown=root:wazuh config/create_user.py /var/ossec/framework/scripts/create_user.py
 
+# Copy custom rules and decoders
+COPY --chown=root:wazuh config/rules/*.xml /var/ossec/etc/rules/
+COPY --chown=root:wazuh config/decoders/*.xml /var/ossec/etc/decoders/
+
 COPY config/filebeat.yml /etc/filebeat/
 
 RUN chmod go-w /etc/filebeat/filebeat.yml
