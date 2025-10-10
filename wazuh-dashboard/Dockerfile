@@ -16,6 +16,9 @@ RUN chmod 775 /check_repository.sh && \
 RUN yum install wazuh-dashboard-${WAZUH_VERSION}-${WAZUH_TAG_REVISION} -y && \
     yum clean all
 
+# Install Anomaly Detection Dashboard plugin
+RUN $INSTALL_DIR/bin/opensearch-dashboards-plugin install anomalyDetectionDashboards --allow-root
+
 # Create and set permissions to data directories
 RUN mkdir -p $INSTALL_DIR/data/wazuh && chmod -R 775 $INSTALL_DIR/data/wazuh
 RUN mkdir -p $INSTALL_DIR/data/wazuh/config && chmod -R 775 $INSTALL_DIR/data/wazuh/config
