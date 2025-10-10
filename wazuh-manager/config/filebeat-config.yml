@@ -1,0 +1,58 @@
+###################### Filebeat Configuration ######################
+# This config filters out sensor logs (from Fluentd) from archives
+# Agent logs are preserved in wazuh-archives-*
+
+filebeat.modules:
+  - module: wazuh
+    alerts:
+      enabled: true
+    archives:
+      enabled: true
+      
+      # Filter OUT sensor logs from archives (Fluentd logs)
+      # These are already stored in anki-* indices
+      processors:
+        - drop_event:
+            when:
+              or:
+                - equals:
+                    data.data_source: "sensor"
+                - contains:
+                    data.log_source: "mikrotik"
+                - contains:
+                    data.log_source: "vmware-esxi"
+
+# No additional inputs - only process Wazuh Manager logs
+filebeat.inputs: []
+
+# Template settings
+setup.template.json.enabled: true
+setup.template.json.path: '/etc/filebeat/wazuh-template.json'
+setup.template.json.name: 'wazuh'
+setup.template.overwrite: true
+setup.ilm.enabled: false
+
+# Output to Wazuh Indexer
+output.elasticsearch:
+  hosts:
+    - "https://wazuh-indexer:9200"
+  username: "${INDEXER_USERNAME}"
+  password: "${INDEXER_PASSWORD}"
+  protocol: https
+  ssl.verification_mode: none
+  indices:
+    - index: "wazuh-alerts-4.x-%{+yyyy.MM.dd}"
+      when.equals:
+        event.dataset: "wazuh.alerts"
+    - index: "wazuh-archives-4.x-%{+yyyy.MM.dd}"
+      when.equals:
+        event.dataset: "wazuh.archives"
+
+logging.metrics.enabled: false
+
+seccomp:
+  default_action: allow
+  syscalls:
+    - action: allow
+      names:
+        - rseq
