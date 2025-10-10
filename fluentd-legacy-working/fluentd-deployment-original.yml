@@ -1,1 +1,0 @@
-fatal: path 'roles/wazuh/tasks/resources/fluentd-deployment.yml' exists on disk, but not in '02fc69e'
