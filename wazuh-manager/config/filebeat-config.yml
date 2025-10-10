@@ -9,14 +9,14 @@ filebeat.modules:
     archives:
       enabled: true
       
-      # Filter OUT sensor logs from archives (Fluentd logs)
+      # Filter OUT Anki sensor logs from archives (Fluentd logs)
       # These are already stored in anki-* indices
       processors:
         - drop_event:
             when:
               or:
                 - equals:
-                    data.data_source: "sensor"
+                    data.data_source: "anki-sensor"
                 - contains:
                     data.log_source: "mikrotik"
                 - contains:
