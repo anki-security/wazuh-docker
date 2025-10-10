@@ -1,0 +1,89 @@
+{
+  "name": "MikroTik - Firewall Rule Change",
+  "type": "monitor",
+  "monitor_type": "query_level_monitor",
+  "enabled": true,
+  "schedule": {
+    "period": {
+      "interval": 1,
+      "unit": "MINUTES"
+    }
+  },
+  "inputs": [{
+    "search": {
+      "indices": ["anki-mikrotik-*"],
+      "query": {
+        "size": 10,
+        "query": {
+          "bool": {
+            "must": [
+              { "match": { "log_source": "mikrotik" }},
+              { 
+                "bool": {
+                  "should": [
+                    { "match_phrase": { "message": "filter rule" }},
+                    { "match_phrase": { "message": "raw rule" }},
+                    { "match_phrase": { "message": "firewall" }}
+                  ],
+                  "minimum_should_match": 1
+                }
+              }
+            ],
+            "filter": [{
+              "range": {
+                "@timestamp": {
+                  "gte": "{{period_end}}||-1m",
+                  "lte": "{{period_end}}",
+                  "format": "epoch_millis"
+                }
+              }
+            }]
+          }
+        },
+        "aggs": {
+          "by_user": {
+            "terms": {
+              "field": "user.name.keyword",
+              "size": 5
+            }
+          },
+          "by_action": {
+            "terms": {
+              "field": "event.action.keyword",
+              "size": 5
+            }
+          }
+        }
+      }
+    }
+  }],
+  "triggers": [{
+    "query_level_trigger": {
+      "name": "Firewall rule modified",
+      "severity": "2",
+      "condition": {
+        "script": {
+          "source": "ctx.results[0].hits.total.value > 0",
+          "lang": "painless"
+        }
+      },
+      "actions": [{
+        "name": "Notify Security Team",
+        "destination_id": "{{DESTINATION_ID}}",
+        "message_template": {
+          "source": "⚠️ MikroTik Firewall Rule Change Detected\n\n*Count:* {{ctx.results.0.hits.total.value}}\n*Time:* {{ctx.periodEnd}}\n*Monitor:* {{ctx.monitor.name}}\n\n*Users:*\n{{#ctx.results.0.aggregations.by_user.buckets}}\n- {{key}}: {{doc_count}} changes\n{{/ctx.results.0.aggregations.by_user.buckets}}\n\n*Actions:*\n{{#ctx.results.0.aggregations.by_action.buckets}}\n- {{key}}: {{doc_count}} times\n{{/ctx.results.0.aggregations.by_action.buckets}}\n\n*Recent Events:*\n{{#ctx.results.0.hits.hits}}\n- {{_source.message}}\n{{/ctx.results.0.hits.hits}}",
+          "lang": "mustache"
+        },
+        "throttle_enabled": true,
+        "throttle": {
+          "value": 5,
+          "unit": "MINUTES"
+        },
+        "subject_template": {
+          "source": "MikroTik Firewall Rule Change: {{ctx.results.0.hits.total.value}} events",
+          "lang": "mustache"
+        }
+      }]
+    }
+  }]
+}

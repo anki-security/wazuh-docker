@@ -1,0 +1,17 @@
+{
+  "name": "webhook-siem",
+  "type": "custom_webhook",
+  "custom_webhook": {
+    "url": "https://your-siem.com/api/alerts",
+    "scheme": "HTTPS",
+    "host": "your-siem.com",
+    "port": 443,
+    "path": "/api/alerts",
+    "method": "POST",
+    "query_params": {},
+    "header_params": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer YOUR_API_TOKEN"
+    }
+  }
+}

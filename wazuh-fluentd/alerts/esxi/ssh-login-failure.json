@@ -1,0 +1,96 @@
+{
+  "name": "ESXi - SSH Login Failure",
+  "type": "monitor",
+  "monitor_type": "query_level_monitor",
+  "enabled": true,
+  "schedule": {
+    "period": {
+      "interval": 1,
+      "unit": "MINUTES"
+    }
+  },
+  "inputs": [{
+    "search": {
+      "indices": ["anki-vmware-esxi-*"],
+      "query": {
+        "size": 10,
+        "query": {
+          "bool": {
+            "must": [
+              { "match": { "log_source": "vmware-esxi" }},
+              { 
+                "bool": {
+                  "should": [
+                    { "match_phrase": { "event.action": "ssh-login-failed" }},
+                    { "match_phrase": { "event.action": "user-login-failed" }},
+                    { "match_phrase": { "message": "SSH login has failed" }},
+                    { "match_phrase": { "message": "Cannot login" }}
+                  ],
+                  "minimum_should_match": 1
+                }
+              }
+            ],
+            "filter": [{
+              "range": {
+                "@timestamp": {
+                  "gte": "{{period_end}}||-1m",
+                  "lte": "{{period_end}}",
+                  "format": "epoch_millis"
+                }
+              }
+            }]
+          }
+        },
+        "aggs": {
+          "by_source_ip": {
+            "terms": {
+              "field": "source.ip",
+              "size": 10
+            }
+          },
+          "by_user": {
+            "terms": {
+              "field": "user.name.keyword",
+              "size": 10
+            }
+          },
+          "by_host": {
+            "terms": {
+              "field": "esxi.host.keyword",
+              "size": 5
+            }
+          }
+        }
+      }
+    }
+  }],
+  "triggers": [{
+    "query_level_trigger": {
+      "name": "High SSH login failures",
+      "severity": "2",
+      "condition": {
+        "script": {
+          "source": "ctx.results[0].hits.total.value > 3",
+          "lang": "painless"
+        }
+      },
+      "actions": [{
+        "name": "Notify Security Team",
+        "destination_id": "{{DESTINATION_ID}}",
+        "message_template": {
+          "source": "🚨 ESXi SSH Login Failures Detected\n\n*Count:* {{ctx.results.0.hits.total.value}}\n*Time:* {{ctx.periodEnd}}\n*Monitor:* {{ctx.monitor.name}}\n\n*ESXi Hosts:*\n{{#ctx.results.0.aggregations.by_host.buckets}}\n- {{key}}: {{doc_count}} failures\n{{/ctx.results.0.aggregations.by_host.buckets}}\n\n*Source IPs:*\n{{#ctx.results.0.aggregations.by_source_ip.buckets}}\n- {{key}}: {{doc_count}} attempts\n{{/ctx.results.0.aggregations.by_source_ip.buckets}}\n\n*Users:*\n{{#ctx.results.0.aggregations.by_user.buckets}}\n- {{key}}: {{doc_count}} attempts\n{{/ctx.results.0.aggregations.by_user.buckets}}\n\n*Recent Events:*\n{{#ctx.results.0.hits.hits}}\n- {{_source.@timestamp}}: {{_source.user.name}}@{{_source.source.ip}} on {{_source.esxi.host}}\n{{/ctx.results.0.hits.hits}}",
+          "lang": "mustache"
+        },
+        "throttle_enabled": true,
+        "throttle": {
+          "value": 10,
+          "unit": "MINUTES"
+        },
+        "subject_template": {
+          "source": "ESXi SSH Login Failures: {{ctx.results.0.hits.total.value}} attempts",
+          "lang": "mustache"
+        }
+      }]
+    }
+  }]
+}

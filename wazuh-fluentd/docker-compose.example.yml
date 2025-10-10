@@ -25,6 +25,7 @@ services:
       - "30524:30524/tcp" # Ruckus Wireless
       - "30525:30525/tcp" # Check Point CEF
       - "30526:30526/udp" # Check Point Syslog
+      - "30527:30527/udp" # VMware ESXi
 
     environment:
       # Required: Wazuh Indexer connection

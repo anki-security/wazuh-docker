@@ -1,0 +1,7 @@
+{
+  "name": "slack-security",
+  "type": "slack",
+  "slack": {
+    "url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+  }
+}
