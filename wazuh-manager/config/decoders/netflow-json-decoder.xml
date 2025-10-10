@@ -10,6 +10,7 @@
 -->
 
 <decoder name="netflow-json">
+  <prematch>"log_source":"netflow"</prematch>
   <plugin_decoder>JSON_Decoder</plugin_decoder>
 </decoder>
 
