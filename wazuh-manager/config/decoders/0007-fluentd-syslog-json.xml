@@ -14,17 +14,17 @@
 <!-- MikroTik Logs -->
 <decoder name="sensor-mikrotik-json">
   <prematch>sensor-mikrotik fluentd: </prematch>
-  <plugin_decoder>JSON_Decoder</plugin_decoder>
+  <plugin_decoder offset="after_prematch">JSON_Decoder</plugin_decoder>
 </decoder>
 
 <!-- ESXi Logs -->
 <decoder name="sensor-esxi-json">
   <prematch>sensor-esxi fluentd: </prematch>
-  <plugin_decoder>JSON_Decoder</plugin_decoder>
+  <plugin_decoder offset="after_prematch">JSON_Decoder</plugin_decoder>
 </decoder>
 
 <!-- NetFlow Logs -->
 <decoder name="sensor-netflow-json">
   <prematch>sensor-netflow fluentd: </prematch>
-  <plugin_decoder>JSON_Decoder</plugin_decoder>
+  <plugin_decoder offset="after_prematch">JSON_Decoder</plugin_decoder>
 </decoder>
