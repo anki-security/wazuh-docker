@@ -116,12 +116,17 @@ jobs:
           WAZUH_VERSION="${{ needs.version.outputs.wazuh_version }}"
           echo "Building ${{ matrix.image }} with Wazuh version: $WAZUH_VERSION"
           
+          # Calculate filebeat module version (remove dots from version)
+          FILEBEAT_MODULE_VERSION=$(echo $WAZUH_VERSION | sed 's/\.//g')
+          WAZUH_FILEBEAT_MODULE="wazuh-filebeat-${FILEBEAT_MODULE_VERSION}.tar.gz"
+          
           # Build single image using build script
           cd ${{ matrix.image }}
-          docker build -t wazuh/${{ matrix.image }}:$WAZUH_VERSION \
+          docker build --no-cache -t wazuh/${{ matrix.image }}:$WAZUH_VERSION \
             --build-arg WAZUH_VERSION=$WAZUH_VERSION \
             --build-arg WAZUH_TAG_REVISION=1 \
             --build-arg FILEBEAT_TEMPLATE_BRANCH=v$WAZUH_VERSION \
+            --build-arg WAZUH_FILEBEAT_MODULE=$WAZUH_FILEBEAT_MODULE \
             .
 
       - name: Tag and push ${{ matrix.image }}
