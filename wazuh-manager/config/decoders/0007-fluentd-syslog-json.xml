@@ -1,52 +1,52 @@
 <!--
   Custom decoders for Fluentd syslog-wrapped JSON
   
-  Input format from remote_syslog plugin with custom hostnames:
-  <134>Oct 11 00:42:12 fluentd-mikrotik fluentd: {"log_source":"mikrotik","full_message":"..."}
-  <134>Oct 11 00:42:12 fluentd-esxi fluentd: {"log_source":"esxi","full_message":"..."}
-  <134>Oct 11 00:42:12 fluentd-netflow fluentd: {"log_source":"netflow","src_ip":"..."}
+  Input format from remote_syslog plugin with sensor hostnames:
+  <134>Oct 11 00:42:12 sensor-mikrotik fluentd: {"log_source":"mikrotik","full_message":"..."}
+  <134>Oct 11 00:42:12 sensor-esxi fluentd: {"log_source":"esxi","full_message":"..."}
+  <134>Oct 11 00:42:12 sensor-netflow fluentd: {"log_source":"netflow","src_ip":"..."}
   
   These decoders:
-  1. Match specific hostname patterns (fluentd-mikrotik, fluentd-esxi, fluentd-netflow)
+  1. Match specific sensor hostname patterns (sensor-mikrotik, sensor-esxi, sensor-netflow)
   2. Extract the JSON payload
   3. Decode the JSON into fields
 -->
 
 <!-- MikroTik Logs -->
-<decoder name="fluentd-mikrotik-syslog">
-  <prematch>fluentd-mikrotik</prematch>
+<decoder name="sensor-mikrotik-syslog">
+  <prematch>sensor-mikrotik</prematch>
   <regex offset="after_prematch">fluentd: (\S+.*})</regex>
   <order>json_data</order>
 </decoder>
 
 <decoder name="fluentd-json-fields">
-  <parent>fluentd-mikrotik-syslog</parent>
+  <parent>sensor-mikrotik-syslog</parent>
   <type>json</type>
   <plugin_decoder>JSON_Decoder</plugin_decoder>
 </decoder>
 
 <!-- ESXi Logs -->
-<decoder name="fluentd-esxi-syslog">
-  <prematch>fluentd-esxi</prematch>
+<decoder name="sensor-esxi-syslog">
+  <prematch>sensor-esxi</prematch>
   <regex offset="after_prematch">fluentd: (\S+.*})</regex>
   <order>json_data</order>
 </decoder>
 
 <decoder name="fluentd-json-fields">
-  <parent>fluentd-esxi-syslog</parent>
+  <parent>sensor-esxi-syslog</parent>
   <type>json</type>
   <plugin_decoder>JSON_Decoder</plugin_decoder>
 </decoder>
 
 <!-- NetFlow Logs -->
-<decoder name="fluentd-netflow-syslog">
-  <prematch>fluentd-netflow</prematch>
+<decoder name="sensor-netflow-syslog">
+  <prematch>sensor-netflow</prematch>
   <regex offset="after_prematch">fluentd: (\S+.*})</regex>
   <order>json_data</order>
 </decoder>
 
 <decoder name="fluentd-json-fields">
-  <parent>fluentd-netflow-syslog</parent>
+  <parent>sensor-netflow-syslog</parent>
   <type>json</type>
   <plugin_decoder>JSON_Decoder</plugin_decoder>
 </decoder>
