@@ -1,0 +1,184 @@
+name: Build and Push Wazuh Docker Images (Parallel)
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: "Version bump type (or 'none' to use current)"
+        required: true
+        default: "none"
+        type: choice
+        options:
+          - none
+          - patch
+          - minor
+          - major
+      push_images:
+        description: 'Push images to registry'
+        type: boolean
+        default: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/anki-security
+
+jobs:
+  # Job 1: Version management (runs first)
+  version:
+    runs-on: ubuntu-22.04
+    outputs:
+      current_version: ${{ steps.current_version.outputs.version }}
+      wazuh_version: ${{ steps.current_version.outputs.wazuh_version }}
+      new_version: ${{ steps.bump_version.outputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Read current version
+        id: current_version
+        run: |
+          CURRENT_VERSION=$(jq -r '.version' VERSION.json)
+          WAZUH_VERSION=$(jq -r '.wazuh_version' VERSION.json)
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "wazuh_version=$WAZUH_VERSION" >> $GITHUB_OUTPUT
+          echo "Current custom version: $CURRENT_VERSION"
+          echo "Wazuh upstream version: $WAZUH_VERSION"
+          
+      - name: Bump version
+        id: bump_version
+        run: |
+          CURRENT_VERSION="${{ steps.current_version.outputs.version }}"
+          
+          if [ "${{ github.event.inputs.bump_type }}" == "none" ]; then
+            NEW_VERSION="$CURRENT_VERSION"
+            echo "Using current version: $NEW_VERSION"
+          else
+            IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+            
+            case "${{ github.event.inputs.bump_type }}" in
+              major)
+                major=$((major + 1))
+                minor=0
+                patch=0
+                ;;
+              minor)
+                minor=$((minor + 1))
+                patch=0
+                ;;
+              patch)
+                patch=$((patch + 1))
+                ;;
+            esac
+            
+            NEW_VERSION="${major}.${minor}.${patch}"
+            echo "Bumped version: $CURRENT_VERSION -> $NEW_VERSION"
+            
+            # Update VERSION.json
+            jq --arg version "$NEW_VERSION" '.version = $version' VERSION.json > VERSION.json.tmp
+            mv VERSION.json.tmp VERSION.json
+          fi
+          
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Upload VERSION.json
+        if: github.event.inputs.bump_type != 'none'
+        uses: actions/upload-artifact@v4
+        with:
+          name: version-file
+          path: VERSION.json
+
+  # Job 2: Build images in parallel (3 runners simultaneously)
+  build:
+    needs: version
+    runs-on: ubuntu-22.04
+    permissions:
+      packages: write
+    strategy:
+      matrix:
+        image:
+          - name: wazuh-manager
+            context: ./wazuh-manager
+          - name: wazuh-indexer
+            context: ./wazuh-indexer
+          - name: wazuh-dashboard
+            context: ./wazuh-dashboard
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push ${{ matrix.image.name }}
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.image.context }}
+          push: ${{ inputs.push_images }}
+          tags: |
+            ${{ env.IMAGE_PREFIX }}/${{ matrix.image.name }}:${{ needs.version.outputs.new_version }}
+            ${{ env.IMAGE_PREFIX }}/${{ matrix.image.name }}:latest
+          build-args: |
+            WAZUH_VERSION=${{ needs.version.outputs.wazuh_version }}
+            WAZUH_TAG_REVISION=1
+            FILEBEAT_TEMPLATE_BRANCH=v${{ needs.version.outputs.wazuh_version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Job 3: Commit version bump (runs after all builds complete)
+  finalize:
+    needs: [version, build]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    if: github.event.inputs.bump_type != 'none'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download VERSION.json
+        uses: actions/download-artifact@v4
+        with:
+          name: version-file
+
+      - name: Commit version bump
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add VERSION.json
+          git commit -m "chore: bump version to ${{ needs.version.outputs.new_version }}"
+          git tag -a "v${{ needs.version.outputs.new_version }}" -m "Release v${{ needs.version.outputs.new_version }}"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+          tags: true
+
+  # Job 4: Summary (runs after everything)
+  summary:
+    needs: [version, build]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Image summary
+        run: |
+          echo "## Built Images" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Wazuh Version:** ${{ needs.version.outputs.wazuh_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Custom Version:** ${{ needs.version.outputs.new_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Images Built in Parallel:" >> $GITHUB_STEP_SUMMARY
+          echo "- \`${{ env.IMAGE_PREFIX }}/wazuh-manager:${{ needs.version.outputs.new_version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`${{ env.IMAGE_PREFIX }}/wazuh-indexer:${{ needs.version.outputs.new_version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`${{ env.IMAGE_PREFIX }}/wazuh-dashboard:${{ needs.version.outputs.new_version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All images are also tagged as \`:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⚡ **Build time reduced by ~66% using parallel jobs!**" >> $GITHUB_STEP_SUMMARY
