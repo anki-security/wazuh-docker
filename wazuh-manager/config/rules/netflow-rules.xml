@@ -10,7 +10,7 @@
 
   <!-- Base rule for all NetFlow logs -->
   <rule id="220001" level="0">
-    <decoded_as>fluentd-json</decoded_as>
+    <decoded_as>sensor-netflow-json</decoded_as>
     <field name="log_source">netflow</field>
     <description>NetFlow data.</description>
   </rule>

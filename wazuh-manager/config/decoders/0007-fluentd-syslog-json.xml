@@ -19,7 +19,7 @@
   <order>json_data</order>
 </decoder>
 
-<decoder name="fluentd-json-fields">
+<decoder name="sensor-mikrotik-json">
   <parent>sensor-mikrotik-syslog</parent>
   <type>json</type>
   <plugin_decoder>JSON_Decoder</plugin_decoder>
@@ -32,7 +32,7 @@
   <order>json_data</order>
 </decoder>
 
-<decoder name="fluentd-json-fields">
+<decoder name="sensor-esxi-json">
   <parent>sensor-esxi-syslog</parent>
   <type>json</type>
   <plugin_decoder>JSON_Decoder</plugin_decoder>
@@ -45,7 +45,7 @@
   <order>json_data</order>
 </decoder>
 
-<decoder name="fluentd-json-fields">
+<decoder name="sensor-netflow-json">
   <parent>sensor-netflow-syslog</parent>
   <type>json</type>
   <plugin_decoder>JSON_Decoder</plugin_decoder>
