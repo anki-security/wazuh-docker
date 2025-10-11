@@ -116,9 +116,8 @@ jobs:
           WAZUH_VERSION="${{ needs.version.outputs.wazuh_version }}"
           echo "Building ${{ matrix.image }} with Wazuh version: $WAZUH_VERSION"
           
-          # Calculate filebeat module version (remove dots from version)
-          FILEBEAT_MODULE_VERSION=$(echo $WAZUH_VERSION | sed 's/\.//g')
-          WAZUH_FILEBEAT_MODULE="wazuh-filebeat-${FILEBEAT_MODULE_VERSION}.tar.gz"
+          # Filebeat module version is always 0.4
+          WAZUH_FILEBEAT_MODULE="wazuh-filebeat-0.4.tar.gz"
           
           # Build single image using build script
           cd ${{ matrix.image }}
