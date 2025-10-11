@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.0.10] - 2025-10-11
+
+### Changed
+- Version bump to 3.0.10
+
+
 ## [3.0.9] - 2025-10-11
 
 ### Changed
