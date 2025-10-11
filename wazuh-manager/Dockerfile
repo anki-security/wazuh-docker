@@ -67,6 +67,6 @@ RUN mkdir -p /var/ossec/var/multigroups && \
 RUN rm /etc/yum.repos.d/wazuh.repo
 
 # Services ports
-EXPOSE 55000/tcp 1514/tcp 1515/tcp 514/udp 1516/tcp
+EXPOSE 55000/tcp 1514/tcp 1515/tcp 514/udp 1516/tcp 1533/tcp
 
 ENTRYPOINT [ "/init" ]
