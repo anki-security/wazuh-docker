@@ -1,5 +1,5 @@
 {
-  "version": "1.0.7",
+  "version": "1.0.8",
   "wazuh_version": "4.13.1",
   "stage": "stable"
 }
