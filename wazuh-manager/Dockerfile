@@ -26,8 +26,14 @@ RUN yum install wazuh-manager-${WAZUH_VERSION}-${WAZUH_TAG_REVISION} -y && \
     chmod 775 /filebeat_module.sh && \
     source /filebeat_module.sh && \
     rm /filebeat_module.sh && \
-    curl --fail --silent -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-amd64.tar.gz \
-    -o /tmp/s6-overlay-amd64.tar.gz && \
+    # Download s6-overlay with retry logic (GitHub releases can be flaky)
+    for i in 1 2 3; do \
+        curl --fail --silent --show-error --retry 3 --retry-delay 5 \
+        -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-amd64.tar.gz \
+        -o /tmp/s6-overlay-amd64.tar.gz && break || sleep 10; \
+    done && \
+    # Verify it's actually a gzip file
+    file /tmp/s6-overlay-amd64.tar.gz | grep -q gzip && \
     tar xzf /tmp/s6-overlay-amd64.tar.gz -C / --exclude="./bin" && \
     tar xzf /tmp/s6-overlay-amd64.tar.gz -C /usr ./bin && \
     rm  /tmp/s6-overlay-amd64.tar.gz
