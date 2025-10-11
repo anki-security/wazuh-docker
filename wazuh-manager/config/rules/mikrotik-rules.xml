@@ -8,7 +8,7 @@
 
   <!-- Base rule for all MikroTik logs -->
   <rule id="200001" level="0">
-    <decoded_as>json</decoded_as>
+    <decoded_as>fluentd-json</decoded_as>
     <field name="log_source">mikrotik</field>
     <description>MikroTik RouterOS log.</description>
   </rule>
