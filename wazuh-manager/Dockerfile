@@ -24,13 +24,21 @@ RUN source /check_repository.sh
 # Copy s6-overlay from local dependencies (more reliable than GitHub API)
 COPY dependencies/s6-overlay-amd64.tar.gz /tmp/
 
+# Validate s6-overlay file before proceeding
+RUN echo "Validating s6-overlay file..." && \
+    ls -lh /tmp/s6-overlay-amd64.tar.gz && \
+    file /tmp/s6-overlay-amd64.tar.gz && \
+    gunzip -t /tmp/s6-overlay-amd64.tar.gz || \
+    (echo "ERROR: s6-overlay-amd64.tar.gz is not a valid gzip file!" && exit 1)
+
 RUN yum install wazuh-manager-${WAZUH_VERSION}-${WAZUH_TAG_REVISION} -y && \
     yum clean all && \
     chmod 775 /filebeat_module.sh && \
     source /filebeat_module.sh && \
-    rm /filebeat_module.sh && \
-    # Extract s6-overlay
-    tar xzf /tmp/s6-overlay-amd64.tar.gz -C / --exclude="./bin" && \
+    rm /filebeat_module.sh
+
+# Extract s6-overlay
+RUN tar xzf /tmp/s6-overlay-amd64.tar.gz -C / --exclude="./bin" && \
     tar xzf /tmp/s6-overlay-amd64.tar.gz -C /usr ./bin && \
     rm  /tmp/s6-overlay-amd64.tar.gz
 
