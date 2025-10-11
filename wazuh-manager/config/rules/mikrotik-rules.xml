@@ -8,7 +8,8 @@
 
   <!-- Base rule for all MikroTik logs -->
   <rule id="100001" level="0">
-    <decoded_as>mikrotik-json</decoded_as>
+    <decoded_as>json</decoded_as>
+    <field name="log_source">mikrotik</field>
     <description>MikroTik RouterOS log.</description>
   </rule>
 

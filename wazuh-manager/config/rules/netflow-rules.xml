@@ -13,7 +13,8 @@
 
   <!-- Base rule for all NetFlow logs -->
   <rule id="100200" level="0">
-    <decoded_as>netflow-json</decoded_as>
+    <decoded_as>json</decoded_as>
+    <field name="log_source">netflow</field>
     <description>NetFlow data.</description>
   </rule>
 

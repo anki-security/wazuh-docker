@@ -6,7 +6,8 @@
 
   <!-- Base rule for all ESXi logs -->
   <rule id="100100" level="0">
-    <decoded_as>esxi-json</decoded_as>
+    <decoded_as>json</decoded_as>
+    <field name="log_source">esxi</field>
     <description>VMware ESXi log.</description>
   </rule>
 
