@@ -94,14 +94,9 @@ jobs:
     permissions:
       packages: write
     strategy:
+      fail-fast: false
       matrix:
-        image:
-          - name: wazuh-manager
-            context: ./wazuh-manager
-          - name: wazuh-indexer
-            context: ./wazuh-indexer
-          - name: wazuh-dashboard
-            context: ./wazuh-dashboard
+        image: [wazuh-manager, wazuh-indexer, wazuh-dashboard]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -116,20 +111,32 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push ${{ matrix.image.name }}
-        uses: docker/build-push-action@v5
-        with:
-          context: ${{ matrix.image.context }}
-          push: ${{ inputs.push_images }}
-          tags: |
-            ${{ env.IMAGE_PREFIX }}/${{ matrix.image.name }}:${{ needs.version.outputs.new_version }}
-            ${{ env.IMAGE_PREFIX }}/${{ matrix.image.name }}:latest
-          build-args: |
-            WAZUH_VERSION=${{ needs.version.outputs.wazuh_version }}
-            WAZUH_TAG_REVISION=1
-            FILEBEAT_TEMPLATE_BRANCH=v${{ needs.version.outputs.wazuh_version }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+      - name: Build ${{ matrix.image }}
+        run: |
+          WAZUH_VERSION="${{ needs.version.outputs.wazuh_version }}"
+          echo "Building ${{ matrix.image }} with Wazuh version: $WAZUH_VERSION"
+          
+          # Build single image using build script
+          cd ${{ matrix.image }}
+          docker build -t wazuh/${{ matrix.image }}:$WAZUH_VERSION \
+            --build-arg WAZUH_VERSION=$WAZUH_VERSION \
+            --build-arg WAZUH_TAG_REVISION=1 \
+            --build-arg FILEBEAT_TEMPLATE_BRANCH=v$WAZUH_VERSION \
+            .
+
+      - name: Tag and push ${{ matrix.image }}
+        if: inputs.push_images
+        run: |
+          CUSTOM_VERSION="${{ needs.version.outputs.new_version }}"
+          WAZUH_VERSION="${{ needs.version.outputs.wazuh_version }}"
+          
+          # Tag for GHCR
+          docker tag wazuh/${{ matrix.image }}:$WAZUH_VERSION ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:$CUSTOM_VERSION
+          docker tag wazuh/${{ matrix.image }}:$WAZUH_VERSION ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:latest
+          
+          # Push
+          docker push ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:$CUSTOM_VERSION
+          docker push ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:latest
 
   # Job 3: Commit version bump (runs after all builds complete)
   finalize:
@@ -147,20 +154,21 @@ jobs:
         with:
           name: version-file
 
-      - name: Commit version bump
+      - name: Commit and push version bump
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
+          
+          # Pull latest changes to avoid conflicts
+          git pull --rebase origin ${{ github.ref_name }}
+          
+          # Add and commit VERSION.json
           git add VERSION.json
-          git commit -m "chore: bump version to ${{ needs.version.outputs.new_version }}"
-          git tag -a "v${{ needs.version.outputs.new_version }}" -m "Release v${{ needs.version.outputs.new_version }}"
-
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
-          tags: true
+          git commit -m "chore: bump version to ${{ needs.version.outputs.new_version }}" || echo "No changes to commit"
+          git tag -a "v${{ needs.version.outputs.new_version }}" -m "Release v${{ needs.version.outputs.new_version }}" || echo "Tag already exists"
+          
+          # Push with retry
+          git push origin ${{ github.ref_name }} --tags || (git pull --rebase origin ${{ github.ref_name }} && git push origin ${{ github.ref_name }} --tags)
 
   # Job 4: Summary (runs after everything)
   summary:
