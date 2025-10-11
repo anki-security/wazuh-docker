@@ -1,18 +1,15 @@
 <!--
   NetFlow Security Rules
   
+  Rule ID Range: 220001-220099 (NetFlow)
   Detection rules for network flow analysis.
   Covers: port scanning, data exfiltration, DDoS, suspicious protocols
-  
-  Installation:
-    1. Copy to: /var/ossec/etc/rules/netflow-rules.xml
-    2. Restart Wazuh Manager: /var/ossec/bin/wazuh-control restart
 -->
 
 <group name="netflow,network,">
 
   <!-- Base rule for all NetFlow logs -->
-  <rule id="100200" level="0">
+  <rule id="220001" level="0">
     <decoded_as>json</decoded_as>
     <field name="log_source">netflow</field>
     <description>NetFlow data.</description>
@@ -20,15 +17,15 @@
 
   <!-- High Volume Traffic -->
   
-  <rule id="100210" level="5">
-    <if_sid>100200</if_sid>
+  <rule id="220010" level="5">
+    <if_sid>220001</if_sid>
     <field name="bytes" type="pcre2">\d{9,}</field>
     <description>NetFlow: High volume traffic detected - $(bytes) bytes from $(src_ip) to $(dst_ip)</description>
     <group>traffic_anomaly,</group>
   </rule>
 
-  <rule id="100211" level="8">
-    <if_sid>100200</if_sid>
+  <rule id="220011" level="8">
+    <if_sid>220001</if_sid>
     <field name="bytes" type="pcre2">\d{10,}</field>
     <description>NetFlow: Very high volume traffic - $(bytes) bytes from $(src_ip) to $(dst_ip)</description>
     <group>traffic_anomaly,data_exfiltration,</group>
@@ -39,8 +36,8 @@
 
   <!-- Port Scanning Detection -->
   
-  <rule id="100220" level="7" frequency="50" timeframe="60">
-    <if_matched_sid>100200</if_matched_sid>
+  <rule id="220020" level="7" frequency="50" timeframe="60">
+    <if_matched_sid>220001</if_matched_sid>
     <same_source_ip />
     <description>NetFlow: Possible port scan detected - $(frequency_value) connections from $(src_ip)</description>
     <group>recon,port_scan,</group>
@@ -49,8 +46,8 @@
     </mitre>
   </rule>
 
-  <rule id="100221" level="10" frequency="100" timeframe="60">
-    <if_matched_sid>100200</if_matched_sid>
+  <rule id="220021" level="10" frequency="100" timeframe="60">
+    <if_matched_sid>220001</if_matched_sid>
     <same_source_ip />
     <description>NetFlow: Active port scan detected - $(frequency_value) connections from $(src_ip)</description>
     <group>recon,port_scan,</group>
@@ -61,8 +58,8 @@
 
   <!-- Suspicious Protocols -->
   
-  <rule id="100230" level="8">
-    <if_sid>100200</if_sid>
+  <rule id="220030" level="8">
+    <if_sid>220001</if_sid>
     <field name="dst_port">22</field>
     <field name="dst_ip" type="pcre2" negate="yes">^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.)</field>
     <description>NetFlow: Outbound SSH connection to external host $(dst_ip):22 from $(src_ip)</description>
@@ -72,8 +69,8 @@
     </mitre>
   </rule>
 
-  <rule id="100231" level="8">
-    <if_sid>100200</if_sid>
+  <rule id="220031" level="8">
+    <if_sid>220001</if_sid>
     <field name="dst_port">21</field>
     <field name="dst_ip" type="pcre2" negate="yes">^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.)</field>
     <description>NetFlow: Outbound FTP connection to external host $(dst_ip):21 from $(src_ip)</description>
@@ -83,8 +80,8 @@
     </mitre>
   </rule>
 
-  <rule id="100232" level="6">
-    <if_sid>100200</if_sid>
+  <rule id="220032" level="6">
+    <if_sid>220001</if_sid>
     <field name="dst_port">22</field>
     <field name="bytes" type="pcre2">\d{8,}</field>
     <description>NetFlow: High volume SSH traffic - possible data exfiltration via SSH from $(src_ip)</description>
@@ -94,8 +91,8 @@
     </mitre>
   </rule>
 
-  <rule id="100233" level="6">
-    <if_sid>100200</if_sid>
+  <rule id="220033" level="6">
+    <if_sid>220001</if_sid>
     <field name="dst_port">443</field>
     <field name="bytes" type="pcre2">\d{9,}</field>
     <description>NetFlow: High volume HTTPS traffic - possible data exfiltration from $(src_ip)</description>
@@ -105,8 +102,8 @@
     </mitre>
   </rule>
 
-  <rule id="100234" level="5">
-    <if_sid>100200</if_sid>
+  <rule id="220034" level="5">
+    <if_sid>220001</if_sid>
     <field name="dst_port">53</field>
     <field name="bytes" type="pcre2">\d{6,}</field>
     <description>NetFlow: High volume DNS traffic - possible DNS tunneling from $(src_ip)</description>
@@ -118,8 +115,8 @@
 
   <!-- Uncommon Ports -->
   
-  <rule id="100240" level="4">
-    <if_sid>100200</if_sid>
+  <rule id="220040" level="4">
+    <if_sid>220001</if_sid>
     <field name="dst_port" type="pcre2">^(4444|5555|6666|7777|8888|9999)$</field>
     <description>NetFlow: Traffic to suspicious port $(dst_port) from $(src_ip) to $(dst_ip)</description>
     <group>suspicious_port,</group>
@@ -128,8 +125,8 @@
     </mitre>
   </rule>
 
-  <rule id="100241" level="6">
-    <if_sid>100200</if_sid>
+  <rule id="220041" level="6">
+    <if_sid>220001</if_sid>
     <field name="dst_port" type="pcre2">^(31337|12345|54321)$</field>
     <description>NetFlow: Traffic to known backdoor port $(dst_port) from $(src_ip) to $(dst_ip)</description>
     <group>backdoor,malware,</group>
@@ -140,8 +137,8 @@
 
   <!-- Outbound Connection Anomalies -->
   
-  <rule id="100260" level="5" frequency="20" timeframe="60">
-    <if_matched_sid>100200</if_matched_sid>
+  <rule id="220060" level="5" frequency="20" timeframe="60">
+    <if_matched_sid>220001</if_matched_sid>
     <same_source_ip />
     <field name="dst_port">445</field>
     <description>NetFlow: Multiple SMB connections from $(src_ip) - possible lateral movement</description>
@@ -151,8 +148,8 @@
     </mitre>
   </rule>
 
-  <rule id="100261" level="5" frequency="20" timeframe="60">
-    <if_matched_sid>100200</if_matched_sid>
+  <rule id="220061" level="5" frequency="20" timeframe="60">
+    <if_matched_sid>220001</if_matched_sid>
     <same_source_ip />
     <field name="dst_port">3389</field>
     <description>NetFlow: Multiple RDP connections from $(src_ip) - possible lateral movement</description>
@@ -164,8 +161,8 @@
 
   <!-- Cryptocurrency Mining -->
   
-  <rule id="100270" level="7">
-    <if_sid>100200</if_sid>
+  <rule id="220070" level="7">
+    <if_sid>220001</if_sid>
     <field name="dst_port" type="pcre2">^(3333|4444|5555|8333|9332|14444)$</field>
     <description>NetFlow: Traffic to cryptocurrency mining pool port $(dst_port) from $(src_ip)</description>
     <group>cryptomining,malware,</group>
@@ -176,8 +173,8 @@
 
   <!-- Tor/VPN Detection -->
   
-  <rule id="100280" level="5">
-    <if_sid>100200</if_sid>
+  <rule id="220080" level="5">
+    <if_sid>220001</if_sid>
     <field name="dst_port">9001</field>
     <description>NetFlow: Possible Tor traffic detected from $(src_ip)</description>
     <group>tor,anonymization,</group>
@@ -186,8 +183,8 @@
     </mitre>
   </rule>
 
-  <rule id="100281" level="5">
-    <if_sid>100200</if_sid>
+  <rule id="220081" level="5">
+    <if_sid>220001</if_sid>
     <field name="dst_port" type="pcre2">^(1194|1723|500|4500)$</field>
     <description>NetFlow: VPN traffic detected on port $(dst_port) from $(src_ip)</description>
     <group>vpn,anonymization,</group>
@@ -195,8 +192,8 @@
 
   <!-- Internal Scanning -->
   
-  <rule id="100290" level="6" frequency="30" timeframe="120">
-    <if_matched_sid>100200</if_matched_sid>
+  <rule id="220090" level="6" frequency="30" timeframe="120">
+    <if_matched_sid>220001</if_matched_sid>
     <same_source_ip />
     <description>NetFlow: Internal network scanning from $(src_ip) - $(frequency_value) connections</description>
     <group>recon,internal_scan,</group>

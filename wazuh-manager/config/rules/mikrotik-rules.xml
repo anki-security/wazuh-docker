@@ -1,13 +1,13 @@
 <!--
   MikroTik RouterOS Rules for JSON-decoded logs from Fluentd
   
-  These rules work with the mikrotik-json decoder
+  Rule ID Range: 200001-200099 (MikroTik)
 -->
 
 <group name="mikrotik,syslog,authentication,">
 
   <!-- Base rule for all MikroTik logs -->
-  <rule id="100001" level="0">
+  <rule id="200001" level="0">
     <decoded_as>json</decoded_as>
     <field name="log_source">mikrotik</field>
     <description>MikroTik RouterOS log.</description>
@@ -15,8 +15,8 @@
 
   <!-- Authentication Events -->
   
-  <rule id="100010" level="3">
-    <if_sid>100001</if_sid>
+  <rule id="200010" level="3">
+    <if_sid>200001</if_sid>
     <field name="mikrotik.full_message">logged in</field>
     <description>MikroTik: User $(mikrotik.parsed.user) logged in from $(mikrotik.parsed.src_ip) via $(mikrotik.parsed.protocol)</description>
     <mitre>
@@ -24,8 +24,8 @@
     </mitre>
   </rule>
 
-  <rule id="100011" level="5">
-    <if_sid>100001</if_sid>
+  <rule id="200011" level="5">
+    <if_sid>200001</if_sid>
     <field name="mikrotik.full_message">login failure</field>
     <description>MikroTik: Login failure for user $(mikrotik.parsed.user) from $(mikrotik.parsed.src_ip) via $(mikrotik.parsed.protocol)</description>
     <mitre>
@@ -33,8 +33,8 @@
     </mitre>
   </rule>
 
-  <rule id="100012" level="10" frequency="5" timeframe="120">
-    <if_matched_sid>100011</if_matched_sid>
+  <rule id="200012" level="10" frequency="5" timeframe="120">
+    <if_matched_sid>200011</if_matched_sid>
     <same_source_ip />
     <description>MikroTik: Multiple login failures from $(srcip)</description>
     <mitre>
@@ -42,24 +42,24 @@
     </mitre>
   </rule>
 
-  <rule id="100013" level="12" frequency="10" timeframe="300">
-    <if_matched_sid>100011</if_matched_sid>
+  <rule id="200013" level="12" frequency="10" timeframe="300">
+    <if_matched_sid>200011</if_matched_sid>
     <description>MikroTik: Brute force attack detected - $(frequency_value) failed attempts</description>
     <mitre>
       <id>T1110.001</id>
     </mitre>
   </rule>
 
-  <rule id="100014" level="3">
-    <if_sid>100001</if_sid>
+  <rule id="200014" level="3">
+    <if_sid>200001</if_sid>
     <field name="full_message">logged out</field>
     <description>MikroTik: User $(user) logged out</description>
   </rule>
 
   <!-- User Management - CRITICAL EVENTS -->
   
-  <rule id="100020" level="10">
-    <if_sid>100001</if_sid>
+  <rule id="200020" level="10">
+    <if_sid>200001</if_sid>
     <field name="full_message" type="pcre2">user \S+ added by</field>
     <description>MikroTik: CRITICAL - New user account created</description>
     <group>user_management,account_creation,</group>
@@ -68,8 +68,8 @@
     </mitre>
   </rule>
 
-  <rule id="100021" level="12">
-    <if_sid>100020</if_sid>
+  <rule id="200021" level="12">
+    <if_sid>200020</if_sid>
     <field name="full_message">group=full</field>
     <description>MikroTik: CRITICAL - Admin user created with FULL privileges</description>
     <group>user_management,privilege_escalation,</group>
@@ -79,8 +79,8 @@
     </mitre>
   </rule>
 
-  <rule id="100022" level="10">
-    <if_sid>100001</if_sid>
+  <rule id="200022" level="10">
+    <if_sid>200001</if_sid>
     <field name="full_message" type="pcre2">user \S+ removed by</field>
     <description>MikroTik: CRITICAL - User account deleted</description>
     <group>user_management,account_deletion,</group>
@@ -89,8 +89,8 @@
     </mitre>
   </rule>
 
-  <rule id="100023" level="9">
-    <if_sid>100001</if_sid>
+  <rule id="200023" level="9">
+    <if_sid>200001</if_sid>
     <field name="full_message" type="pcre2">user \S+ changed by</field>
     <description>MikroTik: CRITICAL - User account modified</description>
     <group>user_management,account_modification,</group>
@@ -99,8 +99,8 @@
     </mitre>
   </rule>
 
-  <rule id="100024" level="11">
-    <if_sid>100023</if_sid>
+  <rule id="200024" level="11">
+    <if_sid>200023</if_sid>
     <field name="full_message">disabled=yes</field>
     <description>MikroTik: CRITICAL - User account DISABLED</description>
     <group>user_management,account_disabled,</group>
@@ -109,8 +109,8 @@
     </mitre>
   </rule>
 
-  <rule id="100025" level="10">
-    <if_sid>100023</if_sid>
+  <rule id="200025" level="10">
+    <if_sid>200023</if_sid>
     <field name="full_message">disabled=no</field>
     <description>MikroTik: CRITICAL - User account ENABLED</description>
     <group>user_management,account_enabled,</group>
@@ -119,8 +119,8 @@
     </mitre>
   </rule>
 
-  <rule id="100026" level="11">
-    <if_sid>100023</if_sid>
+  <rule id="200026" level="11">
+    <if_sid>200023</if_sid>
     <field name="full_message">group=full</field>
     <description>MikroTik: CRITICAL - User promoted to FULL admin privileges</description>
     <group>user_management,privilege_escalation,</group>
@@ -130,8 +130,8 @@
     </mitre>
   </rule>
 
-  <rule id="100027" level="9">
-    <if_sid>100001</if_sid>
+  <rule id="200027" level="9">
+    <if_sid>200001</if_sid>
     <field name="full_message">password changed</field>
     <description>MikroTik: CRITICAL - Password changed for user</description>
     <group>user_management,password_change,</group>
@@ -140,15 +140,15 @@
     </mitre>
   </rule>
 
-  <rule id="100028" level="8">
-    <if_sid>100023</if_sid>
+  <rule id="200028" level="8">
+    <if_sid>200023</if_sid>
     <field name="full_message">group=read</field>
     <description>MikroTik: User privileges changed to READ-ONLY</description>
     <group>user_management,privilege_reduction,</group>
   </rule>
 
-  <rule id="100029" level="8">
-    <if_sid>100023</if_sid>
+  <rule id="200029" level="8">
+    <if_sid>200023</if_sid>
     <field name="full_message">group=write</field>
     <description>MikroTik: User privileges changed to WRITE</description>
     <group>user_management,privilege_change,</group>
@@ -156,8 +156,8 @@
 
   <!-- Firewall Rules -->
   
-  <rule id="100030" level="8">
-    <if_sid>100001</if_sid>
+  <rule id="200030" level="8">
+    <if_sid>200001</if_sid>
     <field name="full_message">filter rule</field>
     <description>MikroTik: Firewall filter rule modified by $(user) from $(srcip)</description>
     <mitre>
@@ -165,8 +165,8 @@
     </mitre>
   </rule>
 
-  <rule id="100031" level="8">
-    <if_sid>100001</if_sid>
+  <rule id="200031" level="8">
+    <if_sid>200001</if_sid>
     <field name="full_message">raw rule</field>
     <description>MikroTik: Firewall raw rule modified by $(user) from $(srcip)</description>
     <mitre>
@@ -174,8 +174,8 @@
     </mitre>
   </rule>
 
-  <rule id="100032" level="10" frequency="3" timeframe="60">
-    <if_matched_sid>100030</if_matched_sid>
+  <rule id="200032" level="10" frequency="3" timeframe="60">
+    <if_matched_sid>200030</if_matched_sid>
     <same_user />
     <description>MikroTik: Multiple firewall rule changes by $(user)</description>
     <mitre>
@@ -185,53 +185,53 @@
 
   <!-- VPN Events -->
   
-  <rule id="100040" level="3">
-    <if_sid>100001</if_sid>
+  <rule id="200040" level="3">
+    <if_sid>200001</if_sid>
     <field name="full_message">wireguard</field>
     <description>MikroTik: WireGuard VPN activity - $(user) from $(srcip)</description>
   </rule>
 
-  <rule id="100041" level="3">
-    <if_sid>100001</if_sid>
+  <rule id="200041" level="3">
+    <if_sid>200001</if_sid>
     <field name="full_message">ovpn</field>
     <description>MikroTik: OpenVPN activity from $(srcip)</description>
   </rule>
 
-  <rule id="100042" level="3">
-    <if_sid>100001</if_sid>
+  <rule id="200042" level="3">
+    <if_sid>200001</if_sid>
     <field name="full_message">l2tp</field>
     <description>MikroTik: L2TP VPN activity from $(srcip)</description>
   </rule>
 
-  <rule id="100043" level="3">
-    <if_sid>100001</if_sid>
+  <rule id="200043" level="3">
+    <if_sid>200001</if_sid>
     <field name="full_message">ipsec</field>
     <description>MikroTik: IPsec VPN activity from $(srcip)</description>
   </rule>
 
   <!-- Network Events -->
   
-  <rule id="100050" level="2">
-    <if_sid>100001</if_sid>
+  <rule id="200050" level="2">
+    <if_sid>200001</if_sid>
     <field name="full_message">link up</field>
     <description>MikroTik: Network interface link up</description>
   </rule>
 
-  <rule id="100051" level="4">
-    <if_sid>100001</if_sid>
+  <rule id="200051" level="4">
+    <if_sid>200001</if_sid>
     <field name="full_message">link down</field>
     <description>MikroTik: Network interface link down</description>
   </rule>
 
-  <rule id="100052" level="5" frequency="10" timeframe="60">
-    <if_matched_sid>100051</if_matched_sid>
+  <rule id="200052" level="5" frequency="10" timeframe="60">
+    <if_matched_sid>200051</if_matched_sid>
     <description>MikroTik: Multiple interface link down events</description>
   </rule>
 
   <!-- DHCP Events -->
   
-  <rule id="100060" level="3">
-    <if_sid>100001</if_sid>
+  <rule id="200060" level="3">
+    <if_sid>200001</if_sid>
     <field name="full_message">dhcp alert</field>
     <description>MikroTik: Rogue DHCP server detected - $(srcip)</description>
     <mitre>
@@ -239,8 +239,8 @@
     </mitre>
   </rule>
 
-  <rule id="100061" level="2">
-    <if_sid>100001</if_sid>
+  <rule id="200061" level="2">
+    <if_sid>200001</if_sid>
     <field name="full_message">assigned</field>
     <description>MikroTik: DHCP address assigned to $(srcip)</description>
   </rule>

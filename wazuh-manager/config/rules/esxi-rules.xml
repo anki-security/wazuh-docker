@@ -1,11 +1,13 @@
 <!--
   VMware ESXi Rules for JSON-decoded logs from Fluentd
+  
+  Rule ID Range: 210001-210099 (ESXi)
 -->
 
 <group name="esxi,vmware,authentication,">
 
   <!-- Base rule for all ESXi logs -->
-  <rule id="100100" level="0">
+  <rule id="210001" level="0">
     <decoded_as>json</decoded_as>
     <field name="log_source">esxi</field>
     <description>VMware ESXi log.</description>
@@ -13,8 +15,8 @@
 
   <!-- SSH Authentication Events -->
   
-  <rule id="100110" level="3">
-    <if_sid>100100</if_sid>
+  <rule id="210010" level="3">
+    <if_sid>210001</if_sid>
     <field name="full_message">SSH session was opened</field>
     <description>ESXi: SSH session opened for $(user)@$(srcip) on $(esxi_host)</description>
     <mitre>
@@ -22,8 +24,8 @@
     </mitre>
   </rule>
 
-  <rule id="100111" level="5">
-    <if_sid>100100</if_sid>
+  <rule id="210011" level="5">
+    <if_sid>210001</if_sid>
     <field name="full_message">SSH login has failed</field>
     <description>ESXi: SSH login failed for $(user)@$(srcip) on $(esxi_host)</description>
     <mitre>
@@ -31,8 +33,8 @@
     </mitre>
   </rule>
 
-  <rule id="100112" level="10" frequency="3" timeframe="120">
-    <if_matched_sid>100111</if_matched_sid>
+  <rule id="210012" level="10" frequency="3" timeframe="120">
+    <if_matched_sid>210011</if_matched_sid>
     <same_source_ip />
     <description>ESXi: Multiple SSH login failures from $(srcip)</description>
     <mitre>
@@ -40,16 +42,16 @@
     </mitre>
   </rule>
 
-  <rule id="100113" level="3">
-    <if_sid>100100</if_sid>
+  <rule id="210013" level="3">
+    <if_sid>210001</if_sid>
     <field name="full_message">SSH session was closed</field>
     <description>ESXi: SSH session closed for $(user)@$(srcip) on $(esxi_host)</description>
   </rule>
 
   <!-- User Login Events -->
   
-  <rule id="100120" level="3">
-    <if_sid>100100</if_sid>
+  <rule id="210020" level="3">
+    <if_sid>210001</if_sid>
     <field name="full_message">User.*logged in</field>
     <description>ESXi: User $(user) logged in from $(srcip) on $(esxi_host)</description>
     <mitre>
@@ -57,8 +59,8 @@
     </mitre>
   </rule>
 
-  <rule id="100121" level="5">
-    <if_sid>100100</if_sid>
+  <rule id="210021" level="5">
+    <if_sid>210001</if_sid>
     <field name="full_message">Cannot login</field>
     <description>ESXi: Login failed for $(user)@$(srcip) on $(esxi_host)</description>
     <mitre>
@@ -66,40 +68,40 @@
     </mitre>
   </rule>
 
-  <rule id="100122" level="3">
-    <if_sid>100100</if_sid>
+  <rule id="210022" level="3">
+    <if_sid>210001</if_sid>
     <field name="full_message">logged out</field>
     <description>ESXi: User $(user) logged out from $(srcip) on $(esxi_host)</description>
   </rule>
 
   <!-- VM Operations -->
   
-  <rule id="100130" level="3">
-    <if_sid>100100</if_sid>
+  <rule id="210030" level="3">
+    <if_sid>210001</if_sid>
     <field name="full_message">is powered off</field>
     <description>ESXi: VM $(vm_name) powered off on $(esxi_host)</description>
   </rule>
 
-  <rule id="100131" level="3">
-    <if_sid>100100</if_sid>
+  <rule id="210031" level="3">
+    <if_sid>210001</if_sid>
     <field name="full_message">has powered on</field>
     <description>ESXi: VM $(vm_name) powered on on $(esxi_host)</description>
   </rule>
 
-  <rule id="100132" level="4">
-    <if_sid>100100</if_sid>
+  <rule id="210032" level="4">
+    <if_sid>210001</if_sid>
     <field name="full_message">Guest OS shut down</field>
     <description>ESXi: VM $(vm_name) guest OS shutdown on $(esxi_host)</description>
   </rule>
 
-  <rule id="100133" level="3">
-    <if_sid>100100</if_sid>
+  <rule id="210033" level="3">
+    <if_sid>210001</if_sid>
     <field name="full_message">Guest OS reboot</field>
     <description>ESXi: VM $(vm_name) guest OS reboot on $(esxi_host)</description>
   </rule>
 
-  <rule id="100134" level="5">
-    <if_sid>100100</if_sid>
+  <rule id="210034" level="5">
+    <if_sid>210001</if_sid>
     <field name="full_message">Created virtual machine</field>
     <description>ESXi: VM $(vm_name) created on $(esxi_host)</description>
     <mitre>
@@ -107,8 +109,8 @@
     </mitre>
   </rule>
 
-  <rule id="100135" level="7">
-    <if_sid>100100</if_sid>
+  <rule id="210035" level="7">
+    <if_sid>210001</if_sid>
     <field name="full_message">Removed.*from</field>
     <description>ESXi: VM $(vm_name) removed from $(datacenter) on $(esxi_host)</description>
     <mitre>
@@ -116,16 +118,16 @@
     </mitre>
   </rule>
 
-  <rule id="100136" level="4">
-    <if_sid>100100</if_sid>
+  <rule id="210036" level="4">
+    <if_sid>210001</if_sid>
     <field name="full_message">Registered</field>
     <description>ESXi: VM $(vm_name) registered on $(esxi_host)</description>
   </rule>
 
   <!-- Account Management -->
   
-  <rule id="100140" level="8">
-    <if_sid>100100</if_sid>
+  <rule id="210040" level="8">
+    <if_sid>210001</if_sid>
     <field name="full_message">Account.*was created</field>
     <description>ESXi: Account $(user) created on $(esxi_host)</description>
     <mitre>
@@ -133,8 +135,8 @@
     </mitre>
   </rule>
 
-  <rule id="100141" level="7">
-    <if_sid>100100</if_sid>
+  <rule id="210041" level="7">
+    <if_sid>210001</if_sid>
     <field name="full_message">Password was changed</field>
     <description>ESXi: Password changed for $(user) on $(esxi_host)</description>
     <mitre>
@@ -142,8 +144,8 @@
     </mitre>
   </rule>
 
-  <rule id="100142" level="8">
-    <if_sid>100100</if_sid>
+  <rule id="210042" level="8">
+    <if_sid>210001</if_sid>
     <field name="full_message">Account.*was removed</field>
     <description>ESXi: Account $(user) removed from $(esxi_host)</description>
     <mitre>
@@ -153,8 +155,8 @@
 
   <!-- File Operations -->
   
-  <rule id="100150" level="4">
-    <if_sid>100100</if_sid>
+  <rule id="210050" level="4">
+    <if_sid>210001</if_sid>
     <field name="full_message">File upload</field>
     <description>ESXi: File upload initiated to $(file_path) on $(esxi_host)</description>
     <mitre>
@@ -162,8 +164,8 @@
     </mitre>
   </rule>
 
-  <rule id="100151" level="6">
-    <if_sid>100100</if_sid>
+  <rule id="210051" level="6">
+    <if_sid>210001</if_sid>
     <field name="full_message">Deletion of file</field>
     <description>ESXi: File deletion initiated for $(file_path) on $(esxi_host)</description>
     <mitre>
@@ -173,8 +175,8 @@
 
   <!-- Command Execution -->
   
-  <rule id="100160" level="3">
-    <if_sid>100100</if_sid>
+  <rule id="210060" level="3">
+    <if_sid>210001</if_sid>
     <field name="command">.+</field>
     <description>ESXi: Command executed by $(user): $(command)</description>
     <mitre>
@@ -184,24 +186,24 @@
 
   <!-- Suspicious Activity -->
   
-  <rule id="100170" level="10" frequency="5" timeframe="300">
-    <if_matched_sid>100134</if_matched_sid>
+  <rule id="210070" level="10" frequency="5" timeframe="300">
+    <if_matched_sid>210034</if_matched_sid>
     <description>ESXi: Multiple VMs created in short time - possible cryptomining</description>
     <mitre>
       <id>T1578.002</id>
     </mitre>
   </rule>
 
-  <rule id="100171" level="12" frequency="10" timeframe="300">
-    <if_matched_sid>100111</if_matched_sid>
+  <rule id="210071" level="12" frequency="10" timeframe="300">
+    <if_matched_sid>210011</if_matched_sid>
     <description>ESXi: SSH brute force attack detected - $(frequency_value) failed login attempts</description>
     <mitre>
       <id>T1110.001</id>
     </mitre>
   </rule>
   
-  <rule id="100172" level="12" frequency="10" timeframe="300">
-    <if_matched_sid>100121</if_matched_sid>
+  <rule id="210072" level="12" frequency="10" timeframe="300">
+    <if_matched_sid>210021</if_matched_sid>
     <description>ESXi: vCenter brute force attack detected - $(frequency_value) failed login attempts</description>
     <mitre>
       <id>T1110.001</id>
