@@ -17,8 +17,8 @@
   
   <rule id="200010" level="3">
     <if_sid>200001</if_sid>
-    <field name="mikrotik.full_message">logged in</field>
-    <description>MikroTik: User $(mikrotik.parsed.user) logged in from $(mikrotik.parsed.src_ip) via $(mikrotik.parsed.protocol)</description>
+    <field name="full_message">logged in</field>
+    <description>MikroTik: User $(parsed.user) logged in from $(parsed.src_ip) via $(parsed.protocol)</description>
     <mitre>
       <id>T1078</id>
     </mitre>
@@ -26,8 +26,8 @@
 
   <rule id="200011" level="5">
     <if_sid>200001</if_sid>
-    <field name="mikrotik.full_message">login failure</field>
-    <description>MikroTik: Login failure for user $(mikrotik.parsed.user) from $(mikrotik.parsed.src_ip) via $(mikrotik.parsed.protocol)</description>
+    <field name="full_message">login failure</field>
+    <description>MikroTik: Login failure for user $(parsed.user) from $(parsed.src_ip) via $(parsed.protocol)</description>
     <mitre>
       <id>T1110</id>
     </mitre>
