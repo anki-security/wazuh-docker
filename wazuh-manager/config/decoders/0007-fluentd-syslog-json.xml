@@ -1,13 +1,30 @@
 <!--
-  Fluentd Syslog-wrapped JSON Decoder
+  Custom decoders for Fluentd syslog-wrapped JSON
   
-  Extracts JSON from syslog messages sent by Fluentd via remote_syslog plugin.
-  Format: <134>Oct 11 16:40:25 sensor-mikrotik fluentd: {"log_source":"mikrotik",...}
+  Input format from remote_syslog plugin with sensor hostnames:
+  <134>Oct 11 00:42:12 sensor-mikrotik fluentd: {"log_source":"mikrotik","full_message":"..."}
+  <134>Oct 11 00:42:12 sensor-esxi fluentd: {"log_source":"esxi","full_message":"..."}
+  <134>Oct 11 00:42:12 sensor-netflow fluentd: {"log_source":"netflow","src_ip":"..."}
   
-  This decoder matches "fluentd: {" and decodes everything after as JSON.
+  These decoders:
+  1. Match the sensor hostname pattern
+  2. Extract and decode the JSON payload after "fluentd: "
 -->
 
-<decoder name="fluentd-json">
-  <prematch>fluentd: {</prematch>
+<!-- MikroTik Logs -->
+<decoder name="sensor-mikrotik-json">
+  <prematch>sensor-mikrotik fluentd: {</prematch>
+  <plugin_decoder offset="after_prematch">JSON_Decoder</plugin_decoder>
+</decoder>
+
+<!-- ESXi Logs -->
+<decoder name="sensor-esxi-json">
+  <prematch>sensor-esxi fluentd: {</prematch>
+  <plugin_decoder offset="after_prematch">JSON_Decoder</plugin_decoder>
+</decoder>
+
+<!-- NetFlow Logs -->
+<decoder name="sensor-netflow-json">
+  <prematch>sensor-netflow fluentd: {</prematch>
   <plugin_decoder offset="after_prematch">JSON_Decoder</plugin_decoder>
 </decoder>
