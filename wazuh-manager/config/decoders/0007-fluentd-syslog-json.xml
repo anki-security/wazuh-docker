@@ -13,39 +13,18 @@
 
 <!-- MikroTik Logs -->
 <decoder name="sensor-mikrotik-json">
-  <prematch>sensor-mikrotik fluentd: </prematch>
-  <regex offset="after_prematch">(\{.+\})</regex>
-  <order>json_event</order>
-</decoder>
-
-<decoder name="sensor-mikrotik-json-child">
-  <parent>sensor-mikrotik-json</parent>
-  <use_own_name>true</use_own_name>
-  <plugin_decoder>JSON_Decoder</plugin_decoder>
+  <prematch>sensor-mikrotik fluentd: {</prematch>
+  <plugin_decoder offset="after_prematch">JSON_Decoder</plugin_decoder>
 </decoder>
 
 <!-- ESXi Logs -->
 <decoder name="sensor-esxi-json">
-  <prematch>sensor-esxi fluentd: </prematch>
-  <regex offset="after_prematch">(\{.+\})</regex>
-  <order>json_event</order>
-</decoder>
-
-<decoder name="sensor-esxi-json-child">
-  <parent>sensor-esxi-json</parent>
-  <use_own_name>true</use_own_name>
-  <plugin_decoder>JSON_Decoder</plugin_decoder>
+  <prematch>sensor-esxi fluentd: {</prematch>
+  <plugin_decoder offset="after_prematch">JSON_Decoder</plugin_decoder>
 </decoder>
 
 <!-- NetFlow Logs -->
 <decoder name="sensor-netflow-json">
-  <prematch>sensor-netflow fluentd: </prematch>
-  <regex offset="after_prematch">(\{.+\})</regex>
-  <order>json_event</order>
-</decoder>
-
-<decoder name="sensor-netflow-json-child">
-  <parent>sensor-netflow-json</parent>
-  <use_own_name>true</use_own_name>
-  <plugin_decoder>JSON_Decoder</plugin_decoder>
+  <prematch>sensor-netflow fluentd: {</prematch>
+  <plugin_decoder offset="after_prematch">JSON_Decoder</plugin_decoder>
 </decoder>
