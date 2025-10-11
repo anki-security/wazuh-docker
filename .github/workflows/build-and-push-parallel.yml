@@ -152,6 +152,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download VERSION.json
         uses: actions/download-artifact@v4
@@ -163,16 +166,23 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           
-          # Pull latest changes to avoid conflicts
-          git pull --rebase origin ${{ github.ref_name }}
+          # Stash any changes, pull latest, then apply
+          git stash --include-untracked || true
+          git pull --rebase origin ${{ github.ref_name }} || true
+          git stash pop || true
           
-          # Add and commit VERSION.json
-          git add VERSION.json
-          git commit -m "chore: bump version to ${{ needs.version.outputs.new_version }}" || echo "No changes to commit"
-          git tag -a "v${{ needs.version.outputs.new_version }}" -m "Release v${{ needs.version.outputs.new_version }}" || echo "Tag already exists"
-          
-          # Push with retry
-          git push origin ${{ github.ref_name }} --tags || (git pull --rebase origin ${{ github.ref_name }} && git push origin ${{ github.ref_name }} --tags)
+          # Check if VERSION.json has changes
+          if git diff --quiet VERSION.json; then
+            echo "No changes to VERSION.json, skipping commit"
+          else
+            # Add and commit VERSION.json
+            git add VERSION.json
+            git commit -m "chore: bump version to ${{ needs.version.outputs.new_version }}"
+            git tag -a "v${{ needs.version.outputs.new_version }}" -m "Release v${{ needs.version.outputs.new_version }}" || echo "Tag already exists"
+            
+            # Push with retry
+            git push origin ${{ github.ref_name }} --tags || (git pull --rebase origin ${{ github.ref_name }} && git push origin ${{ github.ref_name }} --tags)
+          fi
 
   # Job 4: Summary (runs after everything)
   summary:
