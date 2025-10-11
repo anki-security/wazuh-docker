@@ -28,8 +28,10 @@ COPY dependencies/s6-overlay-amd64.tar.gz /tmp/
 RUN echo "Validating s6-overlay file..." && \
     ls -lh /tmp/s6-overlay-amd64.tar.gz && \
     file /tmp/s6-overlay-amd64.tar.gz && \
-    gunzip -t /tmp/s6-overlay-amd64.tar.gz || \
-    (echo "ERROR: s6-overlay-amd64.tar.gz is not a valid gzip file!" && exit 1)
+    if ! gunzip -t /tmp/s6-overlay-amd64.tar.gz 2>&1; then \
+        echo "ERROR: s6-overlay-amd64.tar.gz is not a valid gzip file!" && exit 1; \
+    fi && \
+    echo "s6-overlay validation successful!"
 
 RUN yum install wazuh-manager-${WAZUH_VERSION}-${WAZUH_TAG_REVISION} -y && \
     yum clean all && \
