@@ -26,6 +26,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 RUN gem install fluent-plugin-opensearch --no-document && \
     gem install fluent-plugin-netflow --no-document && \
     gem install fluent-plugin-remote_syslog --no-document && \
+    gem install fluent-plugin-multi-format-parser --no-document && \
     gem sources --clear-all
 
 # Create necessary directories
