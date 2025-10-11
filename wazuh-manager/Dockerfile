@@ -27,13 +27,19 @@ RUN yum install wazuh-manager-${WAZUH_VERSION}-${WAZUH_TAG_REVISION} -y && \
     source /filebeat_module.sh && \
     rm /filebeat_module.sh && \
     # Download s6-overlay with retry logic (GitHub releases can be flaky)
+    SUCCESS=0 && \
     for i in 1 2 3; do \
-        curl --fail --silent --show-error --retry 3 --retry-delay 5 \
+        echo "Attempt $i to download s6-overlay..." && \
+        curl --retry 3 --retry-delay 5 --retry-all-errors \
         -L https://github.com/just-containers/s6-overlay/releases/download/${S6_VERSION}/s6-overlay-amd64.tar.gz \
-        -o /tmp/s6-overlay-amd64.tar.gz && break || sleep 10; \
+        -o /tmp/s6-overlay-amd64.tar.gz && \
+        if file /tmp/s6-overlay-amd64.tar.gz | grep -q gzip; then \
+            SUCCESS=1 && break; \
+        else \
+            echo "Downloaded file is not gzip, retrying..." && rm -f /tmp/s6-overlay-amd64.tar.gz && sleep 10; \
+        fi; \
     done && \
-    # Verify it's actually a gzip file
-    file /tmp/s6-overlay-amd64.tar.gz | grep -q gzip && \
+    if [ "$SUCCESS" -eq 0 ]; then echo "Failed to download s6-overlay after 3 attempts" && exit 1; fi && \
     tar xzf /tmp/s6-overlay-amd64.tar.gz -C / --exclude="./bin" && \
     tar xzf /tmp/s6-overlay-amd64.tar.gz -C /usr ./bin && \
     rm  /tmp/s6-overlay-amd64.tar.gz
