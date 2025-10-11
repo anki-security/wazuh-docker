@@ -47,7 +47,7 @@ RUN tar xzf /tmp/s6-overlay-amd64.tar.gz -C / --exclude="./bin" && \
 COPY config/etc/ /etc/
 COPY --chown=root:wazuh config/create_user.py /var/ossec/framework/scripts/create_user.py
 
-# Copy custom rules and decoders
+# Copy custom rules and decoders (force rebuild: 2025-10-11)
 COPY --chown=root:wazuh config/rules/*.xml /var/ossec/etc/rules/
 COPY --chown=root:wazuh config/decoders/*.xml /var/ossec/etc/decoders/
 
